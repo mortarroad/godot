@@ -236,4 +236,4 @@ if env["builtin_opus"]:
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Module files
-env_opus.add_source_files(env.modules_sources, "register_types.cpp")
+env_opus.add_source_files(env.modules_sources, "*.cpp")
