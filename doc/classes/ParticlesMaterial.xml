@@ -241,7 +241,10 @@
 			Scale randomness ratio.
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
-			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied in the plane that is orthogonal to [member direction].
+		</member>
+		<member name="spread_normal" type="Vector3" setter="set_spread_normal" getter="get_spread_normal" default="Vector3( 0, 1, 0 )">
+			The direction along which [member flatness] is applied. Should be orthogonal to [member direction].
 		</member>
 		<member name="tangential_accel" type="float" setter="set_param" getter="get_param" default="0.0">
 			Tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity giving the particles a swirling motion.
