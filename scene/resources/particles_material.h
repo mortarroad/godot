@@ -147,6 +147,7 @@ private:
 	struct ShaderNames {
 		StringName direction;
 		StringName spread;
+		StringName spread_normal;
 		StringName flatness;
 		StringName initial_linear_velocity;
 		StringName initial_angle;
@@ -217,6 +218,7 @@ private:
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Vector3 direction;
+	Vector3 spread_normal;
 	float spread;
 	float flatness;
 
@@ -265,6 +267,9 @@ public:
 
 	void set_spread(float p_spread);
 	float get_spread() const;
+
+	void set_spread_normal(Vector3 p_spread_normal);
+	Vector3 get_spread_normal() const;
 
 	void set_flatness(float p_flatness);
 	float get_flatness() const;
