@@ -39,6 +39,8 @@
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
 
+Geometry::ConvexHullFunc Geometry::convex_hull_function = NULL;
+
 // This implementation is very inefficient, commenting unless bugs happen. See the other one.
 /*
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
@@ -860,6 +862,11 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 	}
 
 	return mesh;
+}
+
+Geometry::MeshData Geometry::build_convex_hull(const Vector<Vector3> &p_points) {
+	ERR_FAIL_COND_V(!convex_hull_function, MeshData());
+	return convex_hull_function(p_points);
 }
 
 PoolVector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {

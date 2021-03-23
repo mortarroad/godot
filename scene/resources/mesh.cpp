@@ -39,7 +39,7 @@
 
 #include <stdlib.h>
 
-Mesh::ConvexDecompositionFunc Mesh::convex_composition_function = NULL;
+Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = NULL;
 
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
@@ -557,7 +557,7 @@ void Mesh::clear_cache() const {
 
 Vector<Ref<Shape> > Mesh::convex_decompose() const {
 
-	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape> >());
+	ERR_FAIL_COND_V(!convex_decomposition_function, Vector<Ref<Shape> >());
 
 	PoolVector<Face3> faces = get_faces();
 	Vector<Face3> f3;
@@ -567,7 +567,7 @@ Vector<Ref<Shape> > Mesh::convex_decompose() const {
 		f3.write[i] = f[i];
 	}
 
-	Vector<Vector<Face3> > decomposed = convex_composition_function(f3);
+	Vector<Vector<Face3> > decomposed = convex_decomposition_function(f3);
 
 	Vector<Ref<Shape> > ret;
 

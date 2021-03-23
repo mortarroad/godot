@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "register_types.h"
+#include "core/math/geometry.h"
 #include "scene/resources/mesh.h"
+#include "thirdparty/vhacd/inc/btConvexHullComputer.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
 static Vector<Vector<Face3> > convex_decompose(const Vector<Face3> &p_faces) {
@@ -79,10 +81,58 @@ static Vector<Vector<Face3> > convex_decompose(const Vector<Face3> &p_faces) {
 	return ret;
 }
 
+static Geometry::MeshData convex_hull(const Vector<Vector3> &p_points) {
+	// build the convex hull using the convex hull computer from bullet.
+	// simply copies the data over to Godot's types
+	if (p_points.size() == 0)
+		return Geometry::MeshData();
+
+	VHACD::btConvexHullComputer ch;
+	ch.compute(&p_points.ptr()[0][0], sizeof(p_points.ptr()[0]), p_points.size(), -1.0, -1.0);
+
+	Geometry::MeshData ret;
+	ret.vertices.resize(ch.vertices.size());
+	for (int i = 0; i < ch.vertices.size(); i++) {
+		ret.vertices.write[i].x = ch.vertices[i].getX();
+		ret.vertices.write[i].y = ch.vertices[i].getY();
+		ret.vertices.write[i].z = ch.vertices[i].getZ();
+	}
+
+	ret.edges.resize(ch.edges.size());
+	for (int i = 0; i < ch.edges.size(); i++) {
+		ret.edges.write[i].a = (&ch.edges[i])->getSourceVertex();
+		ret.edges.write[i].b = (&ch.edges[i])->getTargetVertex();
+	}
+
+	ret.faces.resize(ch.faces.size());
+	for (int i = 0; i < ch.faces.size(); i++) {
+		const VHACD::btConvexHullComputer::Edge *e_start = &ch.edges[ch.faces[i]];
+		const VHACD::btConvexHullComputer::Edge *e = e_start;
+		Geometry::MeshData::Face &face = ret.faces.write[i];
+
+		do {
+			face.indices.push_back(e->getTargetVertex());
+
+			e = e->getNextEdgeOfFace();
+		} while (e != e_start);
+
+		// compute normal
+		if (face.indices.size() >= 3) {
+			face.plane = Plane(ret.vertices[face.indices[0]], ret.vertices[face.indices[2]], ret.vertices[face.indices[1]]);
+		} else {
+			WARN_PRINT("Too few vertices per face.");
+		}
+	}
+
+	return ret;
+}
+
 void register_vhacd_types() {
-	Mesh::convex_composition_function = convex_decompose;
+	Mesh::convex_decomposition_function = convex_decompose;
+	Geometry::convex_hull_function = convex_hull;
 }
 
 void unregister_vhacd_types() {
-	Mesh::convex_composition_function = NULL;
+	Mesh::convex_decomposition_function = NULL;
+	Geometry::convex_hull_function = NULL;
 }

@@ -31,7 +31,6 @@
 #include "spatial_editor_gizmos.h"
 
 #include "core/math/geometry.h"
-#include "core/math/quick_hull.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon.h"
@@ -3670,19 +3669,16 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		if (points.size() > 3) {
 
 			Vector<Vector3> varr = Variant(points);
-			Geometry::MeshData md;
-			Error err = QuickHull::build(varr, md);
-			if (err == OK) {
-				Vector<Vector3> points2;
-				points2.resize(md.edges.size() * 2);
-				for (int i = 0; i < md.edges.size(); i++) {
-					points2.write[i * 2 + 0] = md.vertices[md.edges[i].a];
-					points2.write[i * 2 + 1] = md.vertices[md.edges[i].b];
-				}
-
-				p_gizmo->add_lines(points2, material);
-				p_gizmo->add_collision_segments(points2);
+			Geometry::MeshData md = Geometry::build_convex_hull(varr);
+			Vector<Vector3> points2;
+			points2.resize(md.edges.size() * 2);
+			for (int i = 0; i < md.edges.size(); i++) {
+				points2.write[i * 2 + 0] = md.vertices[md.edges[i].a];
+				points2.write[i * 2 + 1] = md.vertices[md.edges[i].b];
 			}
+
+			p_gizmo->add_lines(points2, material);
+			p_gizmo->add_collision_segments(points2);
 		}
 	}
 

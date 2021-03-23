@@ -30,7 +30,6 @@
 
 #include "collision_shape.h"
 
-#include "core/math/quick_hull.h"
 #include "mesh_instance.h"
 #include "physics_body.h"
 #include "scene/resources/box_shape.h"

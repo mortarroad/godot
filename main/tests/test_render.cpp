@@ -31,7 +31,6 @@
 #include "test_render.h"
 
 #include "core/math/math_funcs.h"
-#include "core/math/quick_hull.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -120,9 +119,7 @@ public:
 		vts.push_back(Vector3(-1, 1, -1));
 		vts.push_back(Vector3(-1, -1, -1));
 
-		Geometry::MeshData md;
-		Error err = QuickHull::build(vts, md);
-		print_line("ERR: " + itos(err));
+		Geometry::MeshData md = Geometry::build_convex_hull(vts);
 		test_cube = vs->mesh_create();
 		vs->mesh_add_surface_from_mesh_data(test_cube, md);
 		//vs->scenario_set_debug(scenario,VS::SCENARIO_DEBUG_WIREFRAME);

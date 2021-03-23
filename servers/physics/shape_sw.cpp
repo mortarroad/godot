@@ -31,7 +31,6 @@
 #include "shape_sw.h"
 
 #include "core/math/geometry.h"
-#include "core/math/quick_hull.h"
 #include "core/sort_array.h"
 
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
@@ -1148,10 +1147,7 @@ Vector3 ConvexPolygonShapeSW::get_moment_of_inertia(real_t p_mass) const {
 }
 
 void ConvexPolygonShapeSW::_setup(const Vector<Vector3> &p_vertices) {
-
-	Error err = QuickHull::build(p_vertices, mesh);
-	if (err != OK)
-		ERR_PRINT("Failed to build QuickHull");
+	mesh = Geometry::build_convex_hull(p_vertices);
 
 	AABB _aabb;
 

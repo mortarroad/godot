@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "navigation_mesh_generator.h"
-#include "core/math/quick_hull.h"
 #include "core/os/thread.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/collision_shape.h"
@@ -215,25 +214,21 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 					ConvexPolygonShape *convex_polygon = Object::cast_to<ConvexPolygonShape>(*s);
 					if (convex_polygon) {
 						Vector<Vector3> varr = Variant(convex_polygon->get_points());
-						Geometry::MeshData md;
+						Geometry::MeshData md = Geometry::build_convex_hull(varr);
 
-						Error err = QuickHull::build(varr, md);
+						PoolVector3Array faces;
 
-						if (err == OK) {
-							PoolVector3Array faces;
+						for (int j = 0; j < md.faces.size(); ++j) {
+							Geometry::MeshData::Face face = md.faces[j];
 
-							for (int j = 0; j < md.faces.size(); ++j) {
-								Geometry::MeshData::Face face = md.faces[j];
-
-								for (int k = 2; k < face.indices.size(); ++k) {
-									faces.push_back(md.vertices[face.indices[0]]);
-									faces.push_back(md.vertices[face.indices[k - 1]]);
-									faces.push_back(md.vertices[face.indices[k]]);
-								}
+							for (int k = 2; k < face.indices.size(); ++k) {
+								faces.push_back(md.vertices[face.indices[0]]);
+								faces.push_back(md.vertices[face.indices[k - 1]]);
+								faces.push_back(md.vertices[face.indices[k]]);
 							}
-
-							_add_faces(faces, transform, p_verticies, p_indices);
 						}
+
+						_add_faces(faces, transform, p_verticies, p_indices);
 					}
 
 					if (mesh.is_valid()) {

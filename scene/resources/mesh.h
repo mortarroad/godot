@@ -148,7 +148,7 @@ public:
 
 	typedef Vector<Vector<Face3> > (*ConvexDecompositionFunc)(const Vector<Face3> &);
 
-	static ConvexDecompositionFunc convex_composition_function;
+	static ConvexDecompositionFunc convex_decomposition_function;
 
 	Vector<Ref<Shape> > convex_decompose() const;
 
