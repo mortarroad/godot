@@ -69,12 +69,75 @@ static Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quali
 	w[2] = 'B';
 	w[3] = 'P';
 	copymem(&w[4], dst_buff, dst_size);
-	free(dst_buff);
+	WebPFree(dst_buff);
 
 	return dst;
 }
 
-static Ref<Image> _webp_lossy_unpack(const Vector<uint8_t> &p_buffer) {
+static Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
+	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
+
+	Ref<Image> img = p_image->duplicate();
+	if (img->detect_alpha()) {
+		img->convert(Image::FORMAT_RGBA8);
+	} else {
+		img->convert(Image::FORMAT_RGB8);
+	}
+
+	Size2 s(img->get_width(), img->get_height());
+	Vector<uint8_t> data = img->get_data();
+	const uint8_t *r = data.ptr();
+
+	// we need to use the more complex API in order to access the 'exact' flag...
+
+	WebPConfig config;
+	WebPPicture pic;
+	if (!WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, 70) || !WebPPictureInit(&pic)) {
+		ERR_FAIL_V(Vector<uint8_t>());
+	}
+
+	WebPMemoryWriter wrt;
+	config.lossless = 1;
+	config.exact = 1;
+	pic.use_argb = 1;
+	pic.width = s.width;
+	pic.height = s.height;
+	pic.writer = WebPMemoryWrite;
+	pic.custom_ptr = &wrt;
+	WebPMemoryWriterInit(&wrt);
+
+	bool success_import = false;
+	if (img->get_format() == Image::FORMAT_RGB8) {
+		success_import = WebPPictureImportRGB(&pic, r, 3 * s.width);
+	} else {
+		success_import = WebPPictureImportRGBA(&pic, r, 4 * s.width);
+	}
+	bool success_encode = false;
+	if (success_import) {
+		success_encode = WebPEncode(&config, &pic);
+	}
+	WebPPictureFree(&pic);
+
+	if (!success_encode) {
+		WebPMemoryWriterClear(&wrt);
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), "WebP packing failed.");
+	}
+
+	// copy from wrt
+	Vector<uint8_t> dst;
+	dst.resize(4 + wrt.size);
+	uint8_t *w = dst.ptrw();
+	w[0] = 'W';
+	w[1] = 'E';
+	w[2] = 'B';
+	w[3] = 'P';
+	copymem(&w[4], wrt.mem, wrt.size);
+	WebPMemoryWriterClear(&wrt);
+
+	return dst;
+}
+
+static Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer) {
 	int size = p_buffer.size() - 4;
 	ERR_FAIL_COND_V(size <= 0, Ref<Image>());
 	const uint8_t *r = p_buffer.ptr();
@@ -168,6 +231,7 @@ void ImageLoaderWEBP::get_recognized_extensions(List<String> *p_extensions) cons
 
 ImageLoaderWEBP::ImageLoaderWEBP() {
 	Image::_webp_mem_loader_func = _webp_mem_loader_func;
-	Image::lossy_packer = _webp_lossy_pack;
-	Image::lossy_unpacker = _webp_lossy_unpack;
+	Image::webp_lossy_packer = _webp_lossy_pack;
+	Image::webp_lossless_packer = _webp_lossless_pack;
+	Image::webp_unpacker = _webp_unpack;
 }

@@ -136,8 +136,8 @@ class StreamTexture2D : public Texture2D {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -147,8 +147,8 @@ public:
 
 	enum FormatBits {
 		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
+		//FORMAT_BIT_LOSSLESS = 1 << 20,
+		//FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 		FORMAT_BIT_DETECT_3D = 1 << 24,
@@ -434,8 +434,8 @@ class StreamTextureLayered : public TextureLayered {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -445,8 +445,8 @@ public:
 
 	enum FormatBits {
 		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
+		//FORMAT_BIT_LOSSLESS = 1 << 20,
+		//FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
@@ -577,8 +577,8 @@ class StreamTexture3D : public Texture3D {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -588,8 +588,8 @@ public:
 
 	enum FormatBits {
 		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
+		//FORMAT_BIT_LOSSLESS = 1 << 20,
+		//FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
