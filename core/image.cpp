@@ -2349,10 +2349,11 @@ void (*Image::_image_decompress_bptc)(Image *) = NULL;
 void (*Image::_image_decompress_etc1)(Image *) = NULL;
 void (*Image::_image_decompress_etc2)(Image *) = NULL;
 
-PoolVector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = NULL;
-Ref<Image> (*Image::lossy_unpacker)(const PoolVector<uint8_t> &) = NULL;
-PoolVector<uint8_t> (*Image::lossless_packer)(const Ref<Image> &) = NULL;
-Ref<Image> (*Image::lossless_unpacker)(const PoolVector<uint8_t> &) = NULL;
+PoolVector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = NULL;
+PoolVector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = NULL;
+Ref<Image> (*Image::webp_unpacker)(const PoolVector<uint8_t> &) = NULL;
+PoolVector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = NULL;
+Ref<Image> (*Image::png_unpacker)(const PoolVector<uint8_t> &) = NULL;
 
 void Image::_set_data(const Dictionary &p_data) {
 
