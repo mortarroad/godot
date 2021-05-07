@@ -719,8 +719,7 @@ private:
             while (arrays) {
                 PoolArray<T>* p = arrays;
                 arrays = p->next;
-                p->~PoolArray<T>();
-                memfree(p);
+                memdelete(p);
             }
         }
 
@@ -744,14 +743,14 @@ private:
                     nextArray = p->next;
                 }
                 else {
-                    p = new (memalloc(sizeof(PoolArray<T>))) PoolArray<T>(arraySize);
+                    p = memnew(PoolArray<T>(arraySize));
                     p->next = arrays;
                     arrays = p;
                 }
                 o = p->init();
             }
             freeObjects = o->next;
-            return new (o) T();
+            return memnew_placement(o, T);
         };
 
         void freeObject(T* object)
