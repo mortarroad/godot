@@ -2352,9 +2352,9 @@ bool ConvexHullInternal::shiftFace(Face* face, float amount, LocalVector<Vertex*
 #ifdef SHOW_ITERATIONS
     n = 0;
 #endif
-    int32_t pos = 0;
+    uint32_t pos = 0;
     while (pos < stack.size()) {
-        int32_t end = stack.size();
+        uint32_t end = stack.size();
         while (pos < end) {
             Vertex* kept = stack[pos++];
 #ifdef DEBUG_CONVEX_HULL
@@ -2432,7 +2432,7 @@ float ConvexHullComputer::compute(const void* coords, bool doubleCoords, int32_t
     LocalVector<ConvexHullInternal::Vertex*> oldVertices;
     getVertexCopy(hull.vertexList, oldVertices);
     int32_t copied = 0;
-    while (copied < oldVertices.size()) {
+    while (copied < (int32_t)oldVertices.size()) {
         ConvexHullInternal::Vertex* v = oldVertices[copied];
         vertices.push_back(hull.getCoordinates(v));
         ConvexHullInternal::Edge* firstEdge = v->edges;
@@ -2512,13 +2512,13 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry:
 	r_mesh.vertices = ch.vertices;
 
 	r_mesh.edges.resize(ch.edges.size());
-	for (int i = 0; i < ch.edges.size(); i++) {
+	for (uint32_t i = 0; i < ch.edges.size(); i++) {
 		r_mesh.edges.write[i].a = (&ch.edges[i])->getSourceVertex();
 		r_mesh.edges.write[i].b = (&ch.edges[i])->getTargetVertex();
 	}
 
 	r_mesh.faces.resize(ch.faces.size());
-	for (int i = 0; i < ch.faces.size(); i++) {
+	for (uint32_t i = 0; i < ch.faces.size(); i++) {
 		const Edge *e_start = &ch.edges[ch.faces[i]];
 		const Edge *e = e_start;
 		Geometry::MeshData::Face &face = r_mesh.faces.write[i];
