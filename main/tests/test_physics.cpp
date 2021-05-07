@@ -31,8 +31,8 @@
 #include "test_physics.h"
 
 #include "core/map.h"
-#include "core/math/math_funcs.h"
 #include "core/math/convex_hull.h"
+#include "core/math/math_funcs.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/print_string.h"

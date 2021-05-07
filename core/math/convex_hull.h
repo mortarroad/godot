@@ -49,63 +49,60 @@ subject to the following restrictions:
 //#include "btVector3.h"
 
 #include "core/local_vector.h"
-#include "core/vector.h"
 #include "core/math/geometry.h"
 #include "core/math/vector3.h"
+#include "core/vector.h"
 
 /// Convex hull implementation based on Preparata and Hong
 /// See http://code.google.com/p/bullet/issues/detail?id=275
 /// Ole Kniemeyer, MAXON Computer GmbH
 class ConvexHullComputer {
 private:
-    float compute(const void* coords, bool doubleCoords, int32_t stride, int32_t count, float shrink, float shrinkClamp);
+	float compute(const void *coords, bool doubleCoords, int32_t stride, int32_t count, float shrink, float shrinkClamp);
 
 public:
-    class Edge {
-    private:
-        int32_t next;
-        int32_t reverse;
-        int32_t targetVertex;
+	class Edge {
+	private:
+		int32_t next;
+		int32_t reverse;
+		int32_t targetVertex;
 
-        friend class ConvexHullComputer;
+		friend class ConvexHullComputer;
 
-    public:
-        int32_t getSourceVertex() const
-        {
-            return (this + reverse)->targetVertex;
-        }
+	public:
+		int32_t getSourceVertex() const {
+			return (this + reverse)->targetVertex;
+		}
 
-        int32_t getTargetVertex() const
-        {
-            return targetVertex;
-        }
+		int32_t getTargetVertex() const {
+			return targetVertex;
+		}
 
-        const Edge* getNextEdgeOfVertex() const // clockwise list of all edges of a vertex
-        {
-            return this + next;
-        }
+		const Edge *getNextEdgeOfVertex() const // clockwise list of all edges of a vertex
+		{
+			return this + next;
+		}
 
-        const Edge* getNextEdgeOfFace() const // counter-clockwise list of all edges of a face
-        {
-            return (this + reverse)->getNextEdgeOfVertex();
-        }
+		const Edge *getNextEdgeOfFace() const // counter-clockwise list of all edges of a face
+		{
+			return (this + reverse)->getNextEdgeOfVertex();
+		}
 
-        const Edge* getReverseEdge() const
-        {
-            return this + reverse;
-        }
-    };
+		const Edge *getReverseEdge() const {
+			return this + reverse;
+		}
+	};
 
-    // Vertices of the output hull
-    Vector<Vector3> vertices;
+	// Vertices of the output hull
+	Vector<Vector3> vertices;
 
-    // Edges of the output hull
-    LocalVector<Edge> edges;
+	// Edges of the output hull
+	LocalVector<Edge> edges;
 
-    // Faces of the convex hull. Each entry is an index into the "edges" array pointing to an edge of the face. Faces are planar n-gons
-    LocalVector<int32_t> faces;
+	// Faces of the convex hull. Each entry is an index into the "edges" array pointing to an edge of the face. Faces are planar n-gons
+	LocalVector<int32_t> faces;
 
-    /*
+	/*
 		Compute convex hull of "count" vertices stored in "coords". "stride" is the difference in bytes
 		between the addresses of consecutive vertices. If "shrink" is positive, the convex hull is shrunken
 		by that amount (each face is moved by "shrink" length units towards the center along its normal).
@@ -117,19 +114,16 @@ public:
 
 		The output convex hull can be found in the member variables "vertices", "edges", "faces".
 		*/
-    float compute(const float* coords, int32_t stride, int32_t count, float shrink, float shrinkClamp)
-    {
-        return compute(coords, false, stride, count, shrink, shrinkClamp);
-    }
+	float compute(const float *coords, int32_t stride, int32_t count, float shrink, float shrinkClamp) {
+		return compute(coords, false, stride, count, shrink, shrinkClamp);
+	}
 
-    // same as above, but double precision
-    float compute(const double* coords, int32_t stride, int32_t count, float shrink, float shrinkClamp)
-    {
-        return compute(coords, true, stride, count, shrink, shrinkClamp);
-    }
+	// same as above, but double precision
+	float compute(const double *coords, int32_t stride, int32_t count, float shrink, float shrinkClamp) {
+		return compute(coords, true, stride, count, shrink, shrinkClamp);
+	}
 
 	static Error convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
 };
-
 
 #endif // CONVEX_HULL_H

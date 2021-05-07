@@ -31,8 +31,8 @@
 #include "shape_sw.h"
 
 #include "core/image.h"
-#include "core/math/geometry.h"
 #include "core/math/convex_hull.h"
+#include "core/math/geometry.h"
 #include "core/sort_array.h"
 
 // HeightMapShapeSW is based on Bullet btHeightfieldTerrainShape.

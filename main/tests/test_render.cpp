@@ -30,8 +30,8 @@
 
 #include "test_render.h"
 
-#include "core/math/math_funcs.h"
 #include "core/math/convex_hull.h"
+#include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
