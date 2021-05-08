@@ -110,7 +110,6 @@ public:
 		*/
 	real_t compute(const Vector3 *coords, int32_t count, real_t shrink, real_t shrinkClamp);
 
-
 	static Error convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
 };
 
