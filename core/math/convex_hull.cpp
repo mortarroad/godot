@@ -48,6 +48,7 @@ subject to the following restrictions:
 #include "convex_hull.h"
 
 #include "core/error_macros.h"
+#include "core/math/math_defs.h"
 #include "core/os/memory.h"
 
 //#define DEBUG_CONVEX_HULL
@@ -219,8 +220,8 @@ public:
 
 		Int128 operator*(int64_t b) const;
 
-		float toScalar() const {
-			return ((int64_t)high >= 0) ? float(high) * (float(0x100000000LL) * float(0x100000000LL)) + float(low) : -(-*this).toScalar();
+		real_t toScalar() const {
+			return ((int64_t)high >= 0) ? real_t(high) * (real_t(0x100000000LL) * real_t(0x100000000LL)) + real_t(low) : -(-*this).toScalar();
 		}
 
 		int32_t getSign() const {
@@ -287,8 +288,8 @@ public:
 
 		int32_t compare(const Rational64 &b) const;
 
-		float toScalar() const {
-			return sign * ((m_denominator == 0) ? FLT_MAX : (float)m_numerator / m_denominator);
+		real_t toScalar() const {
+			return sign * ((m_denominator == 0) ? FLT_MAX : (real_t)m_numerator / m_denominator);
 		}
 	};
 
@@ -336,7 +337,7 @@ public:
 
 		int32_t compare(int64_t b) const;
 
-		float toScalar() const {
+		real_t toScalar() const {
 			return sign * ((denominator.getSign() == 0) ? FLT_MAX : numerator.toScalar() / denominator.toScalar());
 		}
 	};
@@ -355,15 +356,15 @@ public:
 				x(x), y(y), z(z), denominator(denominator) {
 		}
 
-		float xvalue() const {
+		real_t xvalue() const {
 			return x.toScalar() / denominator.toScalar();
 		}
 
-		float yvalue() const {
+		real_t yvalue() const {
 			return y.toScalar() / denominator.toScalar();
 		}
 
-		float zvalue() const {
+		real_t zvalue() const {
 			return z.toScalar() / denominator.toScalar();
 		}
 	};
@@ -402,16 +403,16 @@ public:
 			return (point.index >= 0) ? Rational128(point.dot(b)) : Rational128(point128.x * b.x + point128.y * b.y + point128.z * b.z, point128.denominator);
 		}
 
-		float xvalue() const {
-			return (point.index >= 0) ? float(point.x) : point128.xvalue();
+		real_t xvalue() const {
+			return (point.index >= 0) ? real_t(point.x) : point128.xvalue();
 		}
 
-		float yvalue() const {
-			return (point.index >= 0) ? float(point.y) : point128.yvalue();
+		real_t yvalue() const {
+			return (point.index >= 0) ? real_t(point.y) : point128.yvalue();
 		}
 
-		float zvalue() const {
-			return (point.index >= 0) ? float(point.z) : point128.zvalue();
+		real_t zvalue() const {
+			return (point.index >= 0) ? real_t(point.z) : point128.zvalue();
 		}
 
 		void receiveNearbyFaces(Vertex *src) {
@@ -704,20 +705,20 @@ private:
 
 	void merge(IntermediateHull &h0, IntermediateHull &h1);
 
-	Vector3 toBtVector(const Point32 &v);
+	Vector3 toGdVector(const Point32 &v);
 
-	Vector3 getBtNormal(Face *face);
+	Vector3 getGdNormal(Face *face);
 
-	bool shiftFace(Face *face, float amount, LocalVector<Vertex *> stack);
+	bool shiftFace(Face *face, real_t amount, LocalVector<Vertex *> stack);
 
 public:
 	Vertex *vertexList;
 
-	void compute(const void *coords, bool doubleCoords, int32_t stride, int32_t count);
+	void compute(const Vector3 *coords, int32_t count);
 
 	Vector3 getCoordinates(const Vertex *v);
 
-	float shrink(float amount, float clampAmount);
+	real_t shrink(real_t amount, real_t clampAmount);
 };
 
 ConvexHullInternal::Int128 ConvexHullInternal::Int128::operator*(int64_t b) const {
@@ -1211,7 +1212,7 @@ ConvexHullInternal::Edge *ConvexHullInternal::findMaxAngle(bool ccw, const Verte
 				Point32 t = *e->target - *start;
 				Rational64 cot(t.dot(sxrxs), t.dot(rxs));
 #ifdef DEBUG_CONVEX_HULL
-				printf("      Angle is %f (%d) for ", (float)btAtan(cot.toScalar()), (int32_t)cot.isNaN());
+				printf("      Angle is %f (%d) for ", Math::atan(cot.toScalar()), (int32_t)cot.isNaN());
 				e->print();
 #endif
 				if (cot.isNaN()) {
@@ -1623,30 +1624,14 @@ struct PointComparator {
 	}
 };
 
-void ConvexHullInternal::compute(const void *coords, bool doubleCoords, int32_t stride, int32_t count) {
+void ConvexHullInternal::compute(const Vector3 *coords, int32_t count) {
 	AABB aabb;
-	const char *ptr = (const char *)coords;
-	if (doubleCoords) {
-		for (int32_t i = 0; i < count; i++) {
-			const double *v = (const double *)ptr;
-			Vector3 p((float)v[0], (float)v[1], (float)v[2]);
-			if (i == 0) {
-				aabb.position = p;
-			} else {
-				aabb.expand_to(p);
-			}
-			ptr += stride;
-		}
-	} else {
-		for (int32_t i = 0; i < count; i++) {
-			const float *v = (const float *)ptr;
-			Vector3 p(v[0], v[1], v[2]);
-			if (i == 0) {
-				aabb.position = p;
-			} else {
-				aabb.expand_to(p);
-			}
-			ptr += stride;
+	for (int32_t i = 0; i < count; i++) {
+		Vector3 p = coords[i];
+		if (i == 0) {
+			aabb.position = p;
+		} else {
+			aabb.expand_to(p);
 		}
 	}
 
@@ -1658,50 +1643,35 @@ void ConvexHullInternal::compute(const void *coords, bool doubleCoords, int32_t 
 	}
 	medAxis = 3 - maxAxis - minAxis;
 
-	s /= float(10216);
+	s /= real_t(10216);
 	if (((medAxis + 1) % 3) != maxAxis) {
 		s *= -1;
 	}
 	scaling = s;
 
 	if (s[0] != 0) {
-		s[0] = float(1) / s[0];
+		s[0] = real_t(1) / s[0];
 	}
 	if (s[1] != 0) {
-		s[1] = float(1) / s[1];
+		s[1] = real_t(1) / s[1];
 	}
 	if (s[2] != 0) {
-		s[2] = float(1) / s[2];
+		s[2] = real_t(1) / s[2];
 	}
 
 	center = aabb.position;
 
 	LocalVector<Point32> points;
 	points.resize(count);
-	ptr = (const char *)coords;
-	if (doubleCoords) {
-		for (int32_t i = 0; i < count; i++) {
-			const double *v = (const double *)ptr;
-			Vector3 p((float)v[0], (float)v[1], (float)v[2]);
-			ptr += stride;
-			p = (p - center) * s;
-			points[i].x = (int32_t)p[medAxis];
-			points[i].y = (int32_t)p[maxAxis];
-			points[i].z = (int32_t)p[minAxis];
-			points[i].index = i;
-		}
-	} else {
-		for (int32_t i = 0; i < count; i++) {
-			const float *v = (const float *)ptr;
-			Vector3 p(v[0], v[1], v[2]);
-			ptr += stride;
-			p = (p - center) * s;
-			points[i].x = (int32_t)p[medAxis];
-			points[i].y = (int32_t)p[maxAxis];
-			points[i].z = (int32_t)p[minAxis];
-			points[i].index = i;
-		}
+	for (int32_t i = 0; i < count; i++) {
+		Vector3 p = coords[i];
+		p = (p - center) * s;
+		points[i].x = (int32_t)p[medAxis];
+		points[i].y = (int32_t)p[maxAxis];
+		points[i].z = (int32_t)p[minAxis];
+		points[i].index = i;
 	}
+
 	points.sort_custom<PointComparator>();
 
 	vertexPool.reset();
@@ -1733,16 +1703,16 @@ void ConvexHullInternal::compute(const void *coords, bool doubleCoords, int32_t 
 #endif
 }
 
-Vector3 ConvexHullInternal::toBtVector(const Point32 &v) {
+Vector3 ConvexHullInternal::toGdVector(const Point32 &v) {
 	Vector3 p;
-	p[medAxis] = float(v.x);
-	p[maxAxis] = float(v.y);
-	p[minAxis] = float(v.z);
+	p[medAxis] = real_t(v.x);
+	p[maxAxis] = real_t(v.y);
+	p[minAxis] = real_t(v.z);
 	return p * scaling;
 }
 
-Vector3 ConvexHullInternal::getBtNormal(Face *face) {
-	return toBtVector(face->dir0).cross(toBtVector(face->dir1)).normalized();
+Vector3 ConvexHullInternal::getGdNormal(Face *face) {
+	return toGdVector(face->dir0).cross(toGdVector(face->dir1)).normalized();
 }
 
 Vector3 ConvexHullInternal::getCoordinates(const Vertex *v) {
@@ -1753,7 +1723,7 @@ Vector3 ConvexHullInternal::getCoordinates(const Vertex *v) {
 	return p * scaling + center;
 }
 
-float ConvexHullInternal::shrink(float amount, float clampAmount) {
+real_t ConvexHullInternal::shrink(real_t amount, real_t clampAmount) {
 	if (!vertexList) {
 		return 0;
 	}
@@ -1827,10 +1797,10 @@ float ConvexHullInternal::shrink(float amount, float clampAmount) {
 	int32_t faceCount = faces.size();
 
 	if (clampAmount > 0) {
-		float minDist = FLT_MAX;
+		real_t minDist = FLT_MAX;
 		for (int32_t i = 0; i < faceCount; i++) {
-			Vector3 normal = getBtNormal(faces[i]);
-			float dist = normal.dot(toBtVector(faces[i]->origin) - hullCenter);
+			Vector3 normal = getGdNormal(faces[i]);
+			real_t dist = normal.dot(toGdVector(faces[i]->origin) - hullCenter);
 			if (dist < minDist) {
 				minDist = dist;
 			}
@@ -1857,8 +1827,8 @@ float ConvexHullInternal::shrink(float amount, float clampAmount) {
 	return amount;
 }
 
-bool ConvexHullInternal::shiftFace(Face *face, float amount, LocalVector<Vertex *> stack) {
-	Vector3 origShift = getBtNormal(face) * -amount;
+bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex *> stack) {
+	Vector3 origShift = getGdNormal(face) * -amount;
 	if (scaling[0] != 0) {
 		origShift[0] /= scaling[0];
 	}
@@ -2231,7 +2201,7 @@ static int32_t getVertexCopy(ConvexHullInternal::Vertex *vertex, LocalVector<Con
 	return index;
 }
 
-float ConvexHullComputer::compute(const void *coords, bool doubleCoords, int32_t stride, int32_t count, float shrink, float shrinkClamp) {
+real_t ConvexHullComputer::compute(const Vector3 *coords, int32_t count, real_t shrink, real_t shrinkClamp) {
 	if (count <= 0) {
 		vertices.clear();
 		edges.clear();
@@ -2240,9 +2210,9 @@ float ConvexHullComputer::compute(const void *coords, bool doubleCoords, int32_t
 	}
 
 	ConvexHullInternal hull;
-	hull.compute(coords, doubleCoords, stride, count);
+	hull.compute(coords, count);
 
-	float shift = 0;
+	real_t shift = 0;
 	if ((shrink > 0) && ((shift = hull.shrink(shrink, shrinkClamp)) < 0)) {
 		vertices.clear();
 		edges.clear();
@@ -2331,7 +2301,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry:
 	}
 
 	ConvexHullComputer ch;
-	ch.compute(&p_points.ptr()[0][0], sizeof(p_points.ptr()[0]), p_points.size(), -1.0, -1.0);
+	ch.compute(p_points.ptr(), p_points.size(), -1.0, -1.0);
 
 	r_mesh.vertices = ch.vertices;
 

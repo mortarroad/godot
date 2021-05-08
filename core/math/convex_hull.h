@@ -45,9 +45,6 @@ subject to the following restrictions:
 #ifndef CONVEX_HULL_H
 #define CONVEX_HULL_H
 
-//#include "btAlignedObjectArray.h"
-//#include "btVector3.h"
-
 #include "core/local_vector.h"
 #include "core/math/geometry.h"
 #include "core/math/vector3.h"
@@ -57,9 +54,6 @@ subject to the following restrictions:
 /// See http://code.google.com/p/bullet/issues/detail?id=275
 /// Ole Kniemeyer, MAXON Computer GmbH
 class ConvexHullComputer {
-private:
-	float compute(const void *coords, bool doubleCoords, int32_t stride, int32_t count, float shrink, float shrinkClamp);
-
 public:
 	class Edge {
 	private:
@@ -103,9 +97,9 @@ public:
 	LocalVector<int32_t> faces;
 
 	/*
-		Compute convex hull of "count" vertices stored in "coords". "stride" is the difference in bytes
-		between the addresses of consecutive vertices. If "shrink" is positive, the convex hull is shrunken
-		by that amount (each face is moved by "shrink" length units towards the center along its normal).
+		Compute convex hull of "count" vertices stored in "coords".
+		If "shrink" is positive, the convex hull is shrunken by that amount (each face is moved by "shrink" length units
+		towards the center along its normal).
 		If "shrinkClamp" is positive, "shrink" is clamped to not exceed "shrinkClamp * innerRadius", where "innerRadius"
 		is the minimum distance of a face to the center of the convex hull.
 
@@ -114,14 +108,8 @@ public:
 
 		The output convex hull can be found in the member variables "vertices", "edges", "faces".
 		*/
-	float compute(const float *coords, int32_t stride, int32_t count, float shrink, float shrinkClamp) {
-		return compute(coords, false, stride, count, shrink, shrinkClamp);
-	}
+	real_t compute(const Vector3 *coords, int32_t count, real_t shrink, real_t shrinkClamp);
 
-	// same as above, but double precision
-	float compute(const double *coords, int32_t stride, int32_t count, float shrink, float shrinkClamp) {
-		return compute(coords, true, stride, count, shrink, shrinkClamp);
-	}
 
 	static Error convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
 };
