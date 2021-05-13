@@ -59,30 +59,30 @@ public:
 	private:
 		int32_t next;
 		int32_t reverse;
-		int32_t targetVertex;
+		int32_t target_vertex;
 
 		friend class ConvexHullComputer;
 
 	public:
-		int32_t getSourceVertex() const {
-			return (this + reverse)->targetVertex;
+		int32_t get_source_vertex() const {
+			return (this + reverse)->target_vertex;
 		}
 
-		int32_t getTargetVertex() const {
-			return targetVertex;
+		int32_t get_target_vertex() const {
+			return target_vertex;
 		}
 
-		const Edge *getNextEdgeOfVertex() const // clockwise list of all edges of a vertex
+		const Edge *get_next_edge_of_vertex() const // clockwise list of all edges of a vertex
 		{
 			return this + next;
 		}
 
-		const Edge *getNextEdgeOfFace() const // counter-clockwise list of all edges of a face
+		const Edge *get_next_edge_of_face() const // counter-clockwise list of all edges of a face
 		{
-			return (this + reverse)->getNextEdgeOfVertex();
+			return (this + reverse)->get_next_edge_of_vertex();
 		}
 
-		const Edge *getReverseEdge() const {
+		const Edge *get_reverse_edge() const {
 			return this + reverse;
 		}
 	};
@@ -108,7 +108,7 @@ public:
 
 		The output convex hull can be found in the member variables "vertices", "edges", "faces".
 		*/
-	real_t compute(const Vector3 *coords, int32_t count, real_t shrink, real_t shrinkClamp);
+	real_t compute(const Vector3 *p_coords, int32_t p_count, real_t p_shrink, real_t p_shrink_clamp);
 
 	static Error convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
 };

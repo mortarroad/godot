@@ -72,11 +72,13 @@ public:
 		int64_t y;
 		int64_t z;
 
-		Point64(int64_t x, int64_t y, int64_t z) :
-				x(x), y(y), z(z) {
+		Point64(int64_t p_x, int64_t p_y, int64_t p_z) {
+			x = p_x;
+			y = p_y;
+			z = p_z;
 		}
 
-		bool isZero() {
+		bool is_zero() {
 			return (x == 0) && (y == 0) && (z == 0);
 		}
 
@@ -95,8 +97,11 @@ public:
 		Point32() {
 		}
 
-		Point32(int32_t x, int32_t y, int32_t z) :
-				x(x), y(y), z(z), index(-1) {
+		Point32(int32_t p_x, int32_t p_y, int32_t p_z) {
+			x = p_x;
+			y = p_y;
+			z = p_z;
+			index = -1;
 		}
 
 		bool operator==(const Point32 &b) const {
@@ -107,7 +112,7 @@ public:
 			return (x != b.x) || (y != b.y) || (z != b.z);
 		}
 
-		bool isZero() {
+		bool is_zero() {
 			return (x == 0) && (y == 0) && (z == 0);
 		}
 
@@ -144,16 +149,23 @@ public:
 		Int128() {
 		}
 
-		Int128(uint64_t low, uint64_t high) :
-				low(low), high(high) {
+		Int128(uint64_t p_low, uint64_t p_high) {
+			low = p_low;
+			high = p_high;
 		}
 
-		Int128(uint64_t low) :
-				low(low), high(0) {
+		Int128(uint64_t p_low) {
+			low = p_low;
+			high = 0;
 		}
 
-		Int128(int64_t value) :
-				low(value), high((value >= 0) ? 0 : (uint64_t)-1LL) {
+		Int128(int64_t p_value) {
+			low = p_value;
+			if (p_value >= 0) {
+				high = 0;
+			} else {
+				high = (uint64_t)-1LL;
+			}
 		}
 
 		static Int128 mul(int64_t a, int64_t b);
@@ -220,11 +232,11 @@ public:
 
 		Int128 operator*(int64_t b) const;
 
-		real_t toScalar() const {
-			return ((int64_t)high >= 0) ? real_t(high) * (real_t(0x100000000LL) * real_t(0x100000000LL)) + real_t(low) : -(-*this).toScalar();
+		real_t to_scalar() const {
+			return ((int64_t)high >= 0) ? real_t(high) * (real_t(0x100000000LL) * real_t(0x100000000LL)) + real_t(low) : -(-*this).to_scalar();
 		}
 
-		int32_t getSign() const {
+		int32_t get_sign() const {
 			return ((int64_t)high < 0) ? -1 : (high || low) ? 1 :
 																0;
 		}
@@ -252,44 +264,44 @@ public:
 
 	class Rational64 {
 	private:
-		uint64_t m_numerator;
-		uint64_t m_denominator;
+		uint64_t numerator;
+		uint64_t denominator;
 		int32_t sign;
 
 	public:
-		Rational64(int64_t numerator, int64_t denominator) {
-			if (numerator > 0) {
+		Rational64(int64_t p_numerator, int64_t p_denominator) {
+			if (p_numerator > 0) {
 				sign = 1;
-				m_numerator = (uint64_t)numerator;
-			} else if (numerator < 0) {
+				numerator = (uint64_t)p_numerator;
+			} else if (p_numerator < 0) {
 				sign = -1;
-				m_numerator = (uint64_t)-numerator;
+				numerator = (uint64_t)-p_numerator;
 			} else {
 				sign = 0;
-				m_numerator = 0;
+				numerator = 0;
 			}
-			if (denominator > 0) {
-				m_denominator = (uint64_t)denominator;
-			} else if (denominator < 0) {
+			if (p_denominator > 0) {
+				denominator = (uint64_t)p_denominator;
+			} else if (p_denominator < 0) {
 				sign = -sign;
-				m_denominator = (uint64_t)-denominator;
+				denominator = (uint64_t)-p_denominator;
 			} else {
-				m_denominator = 0;
+				denominator = 0;
 			}
 		}
 
-		bool isNegativeInfinity() const {
-			return (sign < 0) && (m_denominator == 0);
+		bool is_negative_infinity() const {
+			return (sign < 0) && (denominator == 0);
 		}
 
-		bool isNaN() const {
-			return (sign == 0) && (m_denominator == 0);
+		bool is_nan() const {
+			return (sign == 0) && (denominator == 0);
 		}
 
 		int32_t compare(const Rational64 &b) const;
 
-		real_t toScalar() const {
-			return sign * ((m_denominator == 0) ? FLT_MAX : (real_t)m_numerator / m_denominator);
+		real_t to_scalar() const {
+			return sign * ((denominator == 0) ? FLT_MAX : (real_t)numerator / denominator);
 		}
 	};
 
@@ -298,47 +310,47 @@ public:
 		Int128 numerator;
 		Int128 denominator;
 		int32_t sign;
-		bool isInt64;
+		bool is_int_64;
 
 	public:
-		Rational128(int64_t value) {
-			if (value > 0) {
+		Rational128(int64_t p_value) {
+			if (p_value > 0) {
 				sign = 1;
-				this->numerator = value;
-			} else if (value < 0) {
+				this->numerator = p_value;
+			} else if (p_value < 0) {
 				sign = -1;
-				this->numerator = -value;
+				this->numerator = -p_value;
 			} else {
 				sign = 0;
 				this->numerator = (uint64_t)0;
 			}
 			this->denominator = (uint64_t)1;
-			isInt64 = true;
+			is_int_64 = true;
 		}
 
-		Rational128(const Int128 &numerator, const Int128 &denominator) {
-			sign = numerator.getSign();
+		Rational128(const Int128 &p_numerator, const Int128 &p_denominator) {
+			sign = p_numerator.get_sign();
 			if (sign >= 0) {
-				this->numerator = numerator;
+				this->numerator = p_numerator;
 			} else {
-				this->numerator = -numerator;
+				this->numerator = -p_numerator;
 			}
-			int32_t dsign = denominator.getSign();
+			int32_t dsign = p_denominator.get_sign();
 			if (dsign >= 0) {
-				this->denominator = denominator;
+				this->denominator = p_denominator;
 			} else {
 				sign = -sign;
-				this->denominator = -denominator;
+				this->denominator = -p_denominator;
 			}
-			isInt64 = false;
+			is_int_64 = false;
 		}
 
 		int32_t compare(const Rational128 &b) const;
 
 		int32_t compare(int64_t b) const;
 
-		real_t toScalar() const {
-			return sign * ((denominator.getSign() == 0) ? FLT_MAX : numerator.toScalar() / denominator.toScalar());
+		real_t to_scalar() const {
+			return sign * ((denominator.get_sign() == 0) ? FLT_MAX : numerator.to_scalar() / denominator.to_scalar());
 		}
 	};
 
@@ -352,20 +364,23 @@ public:
 		PointR128() {
 		}
 
-		PointR128(Int128 x, Int128 y, Int128 z, Int128 denominator) :
-				x(x), y(y), z(z), denominator(denominator) {
+		PointR128(Int128 p_x, Int128 p_y, Int128 p_z, Int128 p_denominator) {
+			x = p_x;
+			y = p_y;
+			z = p_z;
+			denominator = p_denominator;
 		}
 
 		real_t xvalue() const {
-			return x.toScalar() / denominator.toScalar();
+			return x.to_scalar() / denominator.to_scalar();
 		}
 
 		real_t yvalue() const {
-			return y.toScalar() / denominator.toScalar();
+			return y.to_scalar() / denominator.to_scalar();
 		}
 
 		real_t zvalue() const {
-			return z.toScalar() / denominator.toScalar();
+			return z.to_scalar() / denominator.to_scalar();
 		}
 	};
 
@@ -374,17 +389,16 @@ public:
 
 	class Vertex {
 	public:
-		Vertex *next;
-		Vertex *prev;
-		Edge *edges;
-		Face *firstNearbyFace;
-		Face *lastNearbyFace;
+		Vertex *next = nullptr;
+		Vertex *prev = nullptr;
+		Edge *edges = nullptr;
+		Face *first_nearby_face = nullptr;
+		Face *last_nearby_face = nullptr;
 		PointR128 point128;
 		Point32 point;
-		int32_t copy;
+		int32_t copy = -1;
 
-		Vertex() :
-				next(NULL), prev(NULL), edges(NULL), firstNearbyFace(NULL), lastNearbyFace(NULL), copy(-1) {
+		Vertex() {
 		}
 
 #ifdef DEBUG_CONVEX_HULL
@@ -392,7 +406,7 @@ public:
 			printf("V%d (%d, %d, %d)", point.index, point.x, point.y, point.z);
 		}
 
-		void printGraph();
+		void print_graph();
 #endif
 
 		Point32 operator-(const Vertex &b) const {
@@ -415,21 +429,21 @@ public:
 			return (point.index >= 0) ? real_t(point.z) : point128.zvalue();
 		}
 
-		void receiveNearbyFaces(Vertex *src) {
-			if (lastNearbyFace) {
-				lastNearbyFace->nextWithSameNearbyVertex = src->firstNearbyFace;
+		void receive_nearby_faces(Vertex *p_src) {
+			if (last_nearby_face) {
+				last_nearby_face->next_with_same_nearby_vertex = p_src->first_nearby_face;
 			} else {
-				firstNearbyFace = src->firstNearbyFace;
+				first_nearby_face = p_src->first_nearby_face;
 			}
-			if (src->lastNearbyFace) {
-				lastNearbyFace = src->lastNearbyFace;
+			if (p_src->last_nearby_face) {
+				last_nearby_face = p_src->last_nearby_face;
 			}
-			for (Face *f = src->firstNearbyFace; f; f = f->nextWithSameNearbyVertex) {
-				btAssert(f->nearbyVertex == src);
-				f->nearbyVertex = this;
+			for (Face *f = p_src->first_nearby_face; f; f = f->next_with_same_nearby_vertex) {
+				btAssert(f->nearby_vertex == p_src);
+				f->nearby_vertex = this;
 			}
-			src->firstNearbyFace = NULL;
-			src->lastNearbyFace = NULL;
+			p_src->first_nearby_face = nullptr;
+			p_src->last_nearby_face = nullptr;
 		}
 	};
 
@@ -443,11 +457,11 @@ public:
 		int32_t copy;
 
 		~Edge() {
-			next = NULL;
-			prev = NULL;
-			reverse = NULL;
-			target = NULL;
-			face = NULL;
+			next = nullptr;
+			prev = nullptr;
+			reverse = nullptr;
+			target = nullptr;
+			face = nullptr;
 		}
 
 		void link(Edge *n) {
@@ -466,28 +480,27 @@ public:
 
 	class Face {
 	public:
-		Face *next;
-		Vertex *nearbyVertex;
-		Face *nextWithSameNearbyVertex;
+		Face *next = nullptr;
+		Vertex *nearby_vertex = nullptr;
+		Face *next_with_same_nearby_vertex = nullptr;
 		Point32 origin;
 		Point32 dir0;
 		Point32 dir1;
 
-		Face() :
-				next(NULL), nearbyVertex(NULL), nextWithSameNearbyVertex(NULL) {
+		Face() {
 		}
 
-		void init(Vertex *a, Vertex *b, Vertex *c) {
-			nearbyVertex = a;
-			origin = a->point;
-			dir0 = *b - *a;
-			dir1 = *c - *a;
-			if (a->lastNearbyFace) {
-				a->lastNearbyFace->nextWithSameNearbyVertex = this;
+		void init(Vertex *p_a, Vertex *p_b, Vertex *p_c) {
+			nearby_vertex = p_a;
+			origin = p_a->point;
+			dir0 = *p_b - *p_a;
+			dir1 = *p_c - *p_a;
+			if (p_a->last_nearby_face) {
+				p_a->last_nearby_face->next_with_same_nearby_vertex = this;
 			} else {
-				a->firstNearbyFace = this;
+				p_a->first_nearby_face = this;
 			}
-			a->lastNearbyFace = this;
+			p_a->last_nearby_face = this;
 		}
 
 		Point64 getNormal() {
@@ -498,69 +511,68 @@ public:
 	template <typename UWord, typename UHWord>
 	class DMul {
 	private:
-		static uint32_t high(uint64_t value) {
-			return (uint32_t)(value >> 32);
+		static uint32_t high(uint64_t p_value) {
+			return (uint32_t)(p_value >> 32);
 		}
 
-		static uint32_t low(uint64_t value) {
-			return (uint32_t)value;
+		static uint32_t low(uint64_t p_value) {
+			return (uint32_t)p_value;
 		}
 
 		static uint64_t mul(uint32_t a, uint32_t b) {
 			return (uint64_t)a * (uint64_t)b;
 		}
 
-		static void shlHalf(uint64_t &value) {
-			value <<= 32;
+		static void shl_half(uint64_t &p_value) {
+			p_value <<= 32;
 		}
 
-		static uint64_t high(Int128 value) {
-			return value.high;
+		static uint64_t high(Int128 p_value) {
+			return p_value.high;
 		}
 
-		static uint64_t low(Int128 value) {
-			return value.low;
+		static uint64_t low(Int128 p_value) {
+			return p_value.low;
 		}
 
 		static Int128 mul(uint64_t a, uint64_t b) {
 			return Int128::mul(a, b);
 		}
 
-		static void shlHalf(Int128 &value) {
-			value.high = value.low;
-			value.low = 0;
+		static void shl_half(Int128 &p_value) {
+			p_value.high = p_value.low;
+			p_value.low = 0;
 		}
 
 	public:
-		static void mul(UWord a, UWord b, UWord &resLow, UWord &resHigh) {
-			UWord p00 = mul(low(a), low(b));
-			UWord p01 = mul(low(a), high(b));
-			UWord p10 = mul(high(a), low(b));
-			UWord p11 = mul(high(a), high(b));
+		static void mul(UWord p_a, UWord p_b, UWord &r_low, UWord &r_high) {
+			UWord p00 = mul(low(p_a), low(p_b));
+			UWord p01 = mul(low(p_a), high(p_b));
+			UWord p10 = mul(high(p_a), low(p_b));
+			UWord p11 = mul(high(p_a), high(p_b));
 			UWord p0110 = UWord(low(p01)) + UWord(low(p10));
 			p11 += high(p01);
 			p11 += high(p10);
 			p11 += high(p0110);
-			shlHalf(p0110);
+			shl_half(p0110);
 			p00 += p0110;
 			if (p00 < p0110) {
 				++p11;
 			}
-			resLow = p00;
-			resHigh = p11;
+			r_low = p00;
+			r_high = p11;
 		}
 	};
 
 private:
 	class IntermediateHull {
 	public:
-		Vertex *minXy;
-		Vertex *maxXy;
-		Vertex *minYx;
-		Vertex *maxYx;
+		Vertex *min_xy = nullptr;
+		Vertex *max_xy = nullptr;
+		Vertex *min_yx = nullptr;
+		Vertex *max_yx = nullptr;
 
-		IntermediateHull() :
-				minXy(NULL), maxXy(NULL), minYx(NULL), maxYx(NULL) {
+		IntermediateHull() {
 		}
 
 		void print();
@@ -579,9 +591,10 @@ private:
 	public:
 		PoolArray<T> *next;
 
-		PoolArray(int32_t size) :
-				size(size), next(NULL) {
-			array = (T *)memalloc(sizeof(T) * size); // TODO: is this the proper allocation function?
+		PoolArray(int32_t p_size) {
+			size = p_size;
+			next = nullptr;
+			array = (T *)memalloc(sizeof(T) * p_size);
 		}
 
 		~PoolArray() {
@@ -591,7 +604,7 @@ private:
 		T *init() {
 			T *o = array;
 			for (int32_t i = 0; i < size; i++, o++) {
-				o->next = (i + 1 < size) ? o + 1 : NULL;
+				o->next = (i + 1 < size) ? o + 1 : nullptr;
 			}
 			return array;
 		}
@@ -600,14 +613,13 @@ private:
 	template <typename T>
 	class Pool {
 	private:
-		PoolArray<T> *arrays;
-		PoolArray<T> *nextArray;
-		T *freeObjects;
-		int32_t arraySize;
+		PoolArray<T> *arrays = nullptr;
+		PoolArray<T> *next_array = nullptr;
+		T *free_objects = nullptr;
+		int32_t array_size = 256;
 
 	public:
-		Pool() :
-				arrays(NULL), nextArray(NULL), freeObjects(NULL), arraySize(256) {
+		Pool()  {
 		}
 
 		~Pool() {
@@ -619,69 +631,69 @@ private:
 		}
 
 		void reset() {
-			nextArray = arrays;
-			freeObjects = NULL;
+			next_array = arrays;
+			free_objects = nullptr;
 		}
 
-		void setArraySize(int32_t arraySize) {
-			this->arraySize = arraySize;
+		void set_array_size(int32_t p_array_size) {
+			this->array_size = p_array_size;
 		}
 
-		T *newObject() {
-			T *o = freeObjects;
+		T *new_object() {
+			T *o = free_objects;
 			if (!o) {
-				PoolArray<T> *p = nextArray;
+				PoolArray<T> *p = next_array;
 				if (p) {
-					nextArray = p->next;
+					next_array = p->next;
 				} else {
-					p = memnew(PoolArray<T>(arraySize));
+					p = memnew(PoolArray<T>(array_size));
 					p->next = arrays;
 					arrays = p;
 				}
 				o = p->init();
 			}
-			freeObjects = o->next;
+			free_objects = o->next;
 			return memnew_placement(o, T);
 		};
 
-		void freeObject(T *object) {
-			object->~T();
-			object->next = freeObjects;
-			freeObjects = object;
+		void free_object(T *p_object) {
+			p_object->~T();
+			p_object->next = free_objects;
+			free_objects = p_object;
 		}
 	};
 
 	Vector3 scaling;
 	Vector3 center;
-	Pool<Vertex> vertexPool;
-	Pool<Edge> edgePool;
-	Pool<Face> facePool;
-	LocalVector<Vertex *> originalVertices;
-	int32_t mergeStamp;
-	int32_t minAxis;
-	int32_t medAxis;
-	int32_t maxAxis;
-	int32_t usedEdgePairs;
-	int32_t maxUsedEdgePairs;
+	Pool<Vertex> vertex_pool;
+	Pool<Edge> edge_pool;
+	Pool<Face> face_pool;
+	LocalVector<Vertex *> original_vertices;
+	int32_t merge_stamp;
+	int32_t min_axis;
+	int32_t med_axis;
+	int32_t max_axis;
+	int32_t used_edge_pairs;
+	int32_t max_used_edge_pairs;
 
-	static Orientation getOrientation(const Edge *prev, const Edge *next, const Point32 &s, const Point32 &t);
-	Edge *findMaxAngle(bool ccw, const Vertex *start, const Point32 &s, const Point64 &rxs, const Point64 &sxrxs, Rational64 &minCot);
-	void findEdgeForCoplanarFaces(Vertex *c0, Vertex *c1, Edge *&e0, Edge *&e1, Vertex *stop0, Vertex *stop1);
+	static Orientation get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t);
+	Edge *find_max_angle(bool p_ccw, const Vertex *p_start, const Point32 &p_s, const Point64 &p_rxs, const Point64 &p_ssxrxs, Rational64 &p_min_cot);
+	void find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1);
 
-	Edge *newEdgePair(Vertex *from, Vertex *to);
+	Edge *new_edge_pair(Vertex *p_from, Vertex *p_to);
 
-	void removeEdgePair(Edge *edge) {
-		Edge *n = edge->next;
-		Edge *r = edge->reverse;
+	void remove_edge_pair(Edge *p_edge) {
+		Edge *n = p_edge->next;
+		Edge *r = p_edge->reverse;
 
-		btAssert(edge->target && r->target);
+		btAssert(p_edge->target && r->target);
 
-		if (n != edge) {
-			n->prev = edge->prev;
-			edge->prev->next = n;
+		if (n != p_edge) {
+			n->prev = p_edge->prev;
+			p_edge->prev->next = n;
 			r->target->edges = n;
 		} else {
-			r->target->edges = NULL;
+			r->target->edges = nullptr;
 		}
 
 		n = r->next;
@@ -689,36 +701,36 @@ private:
 		if (n != r) {
 			n->prev = r->prev;
 			r->prev->next = n;
-			edge->target->edges = n;
+			p_edge->target->edges = n;
 		} else {
-			edge->target->edges = NULL;
+			p_edge->target->edges = nullptr;
 		}
 
-		edgePool.freeObject(edge);
-		edgePool.freeObject(r);
-		usedEdgePairs--;
+		edge_pool.free_object(p_edge);
+		edge_pool.free_object(r);
+		used_edge_pairs--;
 	}
 
-	void computeInternal(int32_t start, int32_t end, IntermediateHull &result);
+	void compute_internal(int32_t p_start, int32_t p_end, IntermediateHull &r_result);
 
-	bool mergeProjection(IntermediateHull &h0, IntermediateHull &h1, Vertex *&c0, Vertex *&c1);
+	bool merge_projection(IntermediateHull &p_h0, IntermediateHull &p_h1, Vertex *&r_c0, Vertex *&r_c1);
 
-	void merge(IntermediateHull &h0, IntermediateHull &h1);
+	void merge(IntermediateHull &p_h0, IntermediateHull &p_h1);
 
-	Vector3 toGdVector(const Point32 &v);
+	Vector3 to_gd_vector(const Point32 &p_v);
 
-	Vector3 getGdNormal(Face *face);
+	Vector3 get_gd_normal(Face *p_face);
 
-	bool shiftFace(Face *face, real_t amount, LocalVector<Vertex *> stack);
+	bool shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> p_stack);
 
 public:
-	Vertex *vertexList;
+	Vertex *vertex_list;
 
-	void compute(const Vector3 *coords, int32_t count);
+	void compute(const Vector3 *p_coords, int32_t p_count);
 
-	Vector3 getCoordinates(const Vertex *v);
+	Vector3 get_coordinates(const Vertex *p_v);
 
-	real_t shrink(real_t amount, real_t clampAmount);
+	real_t shrink(real_t amount, real_t p_clamp_amount);
 };
 
 ConvexHullInternal::Int128 ConvexHullInternal::Int128::operator*(int64_t b) const {
@@ -809,7 +821,7 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 
 #else
 
-	return sign * Int128::mul(m_numerator, b.m_denominator).ucmp(Int128::mul(m_denominator, b.m_numerator));
+	return sign * Int128::mul(numerator, b.denominator).ucmp(Int128::mul(denominator, b.numerator));
 
 #endif
 }
@@ -820,7 +832,7 @@ int32_t ConvexHullInternal::Rational128::compare(const Rational128 &b) const {
 	} else if (sign == 0) {
 		return 0;
 	}
-	if (isInt64) {
+	if (is_int_64) {
 		return -b.compare(sign * (int64_t)numerator.low);
 	}
 
@@ -836,7 +848,7 @@ int32_t ConvexHullInternal::Rational128::compare(const Rational128 &b) const {
 }
 
 int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
-	if (isInt64) {
+	if (is_int_64) {
 		int64_t a = sign * (int64_t)numerator.low;
 		return (a > b) ? 1 : (a < b) ? -1 :
 										 0;
@@ -857,64 +869,64 @@ int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
 	return numerator.ucmp(denominator * b) * sign;
 }
 
-ConvexHullInternal::Edge *ConvexHullInternal::newEdgePair(Vertex *from, Vertex *to) {
-	btAssert(from && to);
-	Edge *e = edgePool.newObject();
-	Edge *r = edgePool.newObject();
+ConvexHullInternal::Edge *ConvexHullInternal::new_edge_pair(Vertex *p_from, Vertex *p_to) {
+	btAssert(p_from && p_to);
+	Edge *e = edge_pool.new_object();
+	Edge *r = edge_pool.new_object();
 	e->reverse = r;
 	r->reverse = e;
-	e->copy = mergeStamp;
-	r->copy = mergeStamp;
-	e->target = to;
-	r->target = from;
-	e->face = NULL;
-	r->face = NULL;
-	usedEdgePairs++;
-	if (usedEdgePairs > maxUsedEdgePairs) {
-		maxUsedEdgePairs = usedEdgePairs;
+	e->copy = merge_stamp;
+	r->copy = merge_stamp;
+	e->target = p_to;
+	r->target = p_from;
+	e->face = nullptr;
+	r->face = nullptr;
+	used_edge_pairs++;
+	if (used_edge_pairs > max_used_edge_pairs) {
+		max_used_edge_pairs = used_edge_pairs;
 	}
 	return e;
 }
 
-bool ConvexHullInternal::mergeProjection(IntermediateHull &h0, IntermediateHull &h1, Vertex *&c0, Vertex *&c1) {
-	Vertex *v0 = h0.maxYx;
-	Vertex *v1 = h1.minYx;
+bool ConvexHullInternal::merge_projection(IntermediateHull &r_h0, IntermediateHull &r_h1, Vertex *&r_c0, Vertex *&r_c1) {
+	Vertex *v0 = r_h0.max_yx;
+	Vertex *v1 = r_h1.min_yx;
 	if ((v0->point.x == v1->point.x) && (v0->point.y == v1->point.y)) {
 		btAssert(v0->point.z < v1->point.z);
 		Vertex *v1p = v1->prev;
 		if (v1p == v1) {
-			c0 = v0;
+			r_c0 = v0;
 			if (v1->edges) {
 				btAssert(v1->edges->next == v1->edges);
 				v1 = v1->edges->target;
 				btAssert(v1->edges->next == v1->edges);
 			}
-			c1 = v1;
+			r_c1 = v1;
 			return false;
 		}
 		Vertex *v1n = v1->next;
 		v1p->next = v1n;
 		v1n->prev = v1p;
-		if (v1 == h1.minXy) {
+		if (v1 == r_h1.min_xy) {
 			if ((v1n->point.x < v1p->point.x) || ((v1n->point.x == v1p->point.x) && (v1n->point.y < v1p->point.y))) {
-				h1.minXy = v1n;
+				r_h1.min_xy = v1n;
 			} else {
-				h1.minXy = v1p;
+				r_h1.min_xy = v1p;
 			}
 		}
-		if (v1 == h1.maxXy) {
+		if (v1 == r_h1.max_xy) {
 			if ((v1n->point.x > v1p->point.x) || ((v1n->point.x == v1p->point.x) && (v1n->point.y > v1p->point.y))) {
-				h1.maxXy = v1n;
+				r_h1.max_xy = v1n;
 			} else {
-				h1.maxXy = v1p;
+				r_h1.max_xy = v1p;
 			}
 		}
 	}
 
-	v0 = h0.maxXy;
-	v1 = h1.maxXy;
-	Vertex *v00 = NULL;
-	Vertex *v10 = NULL;
+	v0 = r_h0.max_xy;
+	v1 = r_h1.max_xy;
+	Vertex *v00 = nullptr;
+	Vertex *v10 = nullptr;
 	int32_t sign = 1;
 
 	for (int32_t side = 0; side <= 1; side++) {
@@ -1001,8 +1013,8 @@ bool ConvexHullInternal::mergeProjection(IntermediateHull &h0, IntermediateHull 
 			v00 = v0;
 			v10 = v1;
 
-			v0 = h0.minXy;
-			v1 = h1.minXy;
+			v0 = r_h0.min_xy;
+			v1 = r_h1.min_xy;
 			sign = -1;
 		}
 	}
@@ -1013,32 +1025,32 @@ bool ConvexHullInternal::mergeProjection(IntermediateHull &h0, IntermediateHull 
 	v00->next = v10;
 	v10->prev = v00;
 
-	if (h1.minXy->point.x < h0.minXy->point.x) {
-		h0.minXy = h1.minXy;
+	if (r_h1.min_xy->point.x < r_h0.min_xy->point.x) {
+		r_h0.min_xy = r_h1.min_xy;
 	}
-	if (h1.maxXy->point.x >= h0.maxXy->point.x) {
-		h0.maxXy = h1.maxXy;
+	if (r_h1.max_xy->point.x >= r_h0.max_xy->point.x) {
+		r_h0.max_xy = r_h1.max_xy;
 	}
 
-	h0.maxYx = h1.maxYx;
+	r_h0.max_yx = r_h1.max_yx;
 
-	c0 = v00;
-	c1 = v10;
+	r_c0 = v00;
+	r_c1 = v10;
 
 	return true;
 }
 
-void ConvexHullInternal::computeInternal(int32_t start, int32_t end, IntermediateHull &result) {
-	int32_t n = end - start;
+void ConvexHullInternal::compute_internal(int32_t p_start, int32_t p_end, IntermediateHull &r_result) {
+	int32_t n = p_end - p_start;
 	switch (n) {
 		case 0:
-			result.minXy = NULL;
-			result.maxXy = NULL;
-			result.minYx = NULL;
-			result.maxYx = NULL;
+			r_result.min_xy = nullptr;
+			r_result.max_xy = nullptr;
+			r_result.min_yx = nullptr;
+			r_result.max_yx = nullptr;
 			return;
 		case 2: {
-			Vertex *v = originalVertices[start];
+			Vertex *v = original_vertices[p_start];
 			Vertex *w = v + 1;
 			if (v->point != w->point) {
 				int32_t dx = v->point.x - w->point.x;
@@ -1053,10 +1065,10 @@ void ConvexHullInternal::computeInternal(int32_t start, int32_t end, Intermediat
 					btAssert(v->point.z < w->point.z);
 					v->next = v;
 					v->prev = v;
-					result.minXy = v;
-					result.maxXy = v;
-					result.minYx = v;
-					result.maxYx = v;
+					r_result.min_xy = v;
+					r_result.max_xy = v;
+					r_result.min_yx = v;
+					r_result.max_yx = v;
 				} else {
 					v->next = w;
 					v->prev = w;
@@ -1064,23 +1076,23 @@ void ConvexHullInternal::computeInternal(int32_t start, int32_t end, Intermediat
 					w->prev = v;
 
 					if ((dx < 0) || ((dx == 0) && (dy < 0))) {
-						result.minXy = v;
-						result.maxXy = w;
+						r_result.min_xy = v;
+						r_result.max_xy = w;
 					} else {
-						result.minXy = w;
-						result.maxXy = v;
+						r_result.min_xy = w;
+						r_result.max_xy = v;
 					}
 
 					if ((dy < 0) || ((dy == 0) && (dx < 0))) {
-						result.minYx = v;
-						result.maxYx = w;
+						r_result.min_yx = v;
+						r_result.max_yx = w;
 					} else {
-						result.minYx = w;
-						result.maxYx = v;
+						r_result.min_yx = w;
+						r_result.max_yx = v;
 					}
 				}
 
-				Edge *e = newEdgePair(v, w);
+				Edge *e = new_edge_pair(v, w);
 				e->link(e);
 				v->edges = e;
 
@@ -1093,72 +1105,72 @@ void ConvexHullInternal::computeInternal(int32_t start, int32_t end, Intermediat
 		}
 		// lint -fallthrough
 		case 1: {
-			Vertex *v = originalVertices[start];
-			v->edges = NULL;
+			Vertex *v = original_vertices[p_start];
+			v->edges = nullptr;
 			v->next = v;
 			v->prev = v;
 
-			result.minXy = v;
-			result.maxXy = v;
-			result.minYx = v;
-			result.maxYx = v;
+			r_result.min_xy = v;
+			r_result.max_xy = v;
+			r_result.min_yx = v;
+			r_result.max_yx = v;
 
 			return;
 		}
 	}
 
-	int32_t split0 = start + n / 2;
-	Point32 p = originalVertices[split0 - 1]->point;
+	int32_t split0 = p_start + n / 2;
+	Point32 p = original_vertices[split0 - 1]->point;
 	int32_t split1 = split0;
-	while ((split1 < end) && (originalVertices[split1]->point == p)) {
+	while ((split1 < p_end) && (original_vertices[split1]->point == p)) {
 		split1++;
 	}
-	computeInternal(start, split0, result);
+	compute_internal(p_start, split0, r_result);
 	IntermediateHull hull1;
-	computeInternal(split1, end, hull1);
+	compute_internal(split1, p_end, hull1);
 #ifdef DEBUG_CONVEX_HULL
 	printf("\n\nMerge\n");
-	result.print();
+	r_result.print();
 	hull1.print();
 #endif
-	merge(result, hull1);
+	merge(r_result, hull1);
 #ifdef DEBUG_CONVEX_HULL
 	printf("\n  Result\n");
-	result.print();
+	r_result.print();
 #endif
 }
 
 #ifdef DEBUG_CONVEX_HULL
 void ConvexHullInternal::IntermediateHull::print() {
 	printf("    Hull\n");
-	for (Vertex *v = minXy; v;) {
+	for (Vertex *v = min_xy; v;) {
 		printf("      ");
 		v->print();
-		if (v == maxXy) {
-			printf(" maxXy");
+		if (v == max_xy) {
+			printf(" max_xy");
 		}
-		if (v == minYx) {
-			printf(" minYx");
+		if (v == min_yx) {
+			printf(" min_yx");
 		}
-		if (v == maxYx) {
-			printf(" maxYx");
+		if (v == max_yx) {
+			printf(" max_yx");
 		}
 		if (v->next->prev != v) {
 			printf(" Inconsistency");
 		}
 		printf("\n");
 		v = v->next;
-		if (v == minXy) {
+		if (v == min_xy) {
 			break;
 		}
 	}
-	if (minXy) {
-		minXy->copy = (minXy->copy == -1) ? -2 : -1;
-		minXy->printGraph();
+	if (min_xy) {
+		min_xy->copy = (min_xy->copy == -1) ? -2 : -1;
+		min_xy->print_graph();
 	}
 }
 
-void ConvexHullInternal::Vertex::printGraph() {
+void ConvexHullInternal::Vertex::print_graph() {
 	print();
 	printf("\nEdges\n");
 	Edge *e = edges;
@@ -1172,7 +1184,7 @@ void ConvexHullInternal::Vertex::printGraph() {
 			Vertex *v = e->target;
 			if (v->copy != copy) {
 				v->copy = copy;
-				v->printGraph();
+				v->print_graph();
 			}
 			e = e->next;
 		} while (e != edges);
@@ -1180,53 +1192,53 @@ void ConvexHullInternal::Vertex::printGraph() {
 }
 #endif
 
-ConvexHullInternal::Orientation ConvexHullInternal::getOrientation(const Edge *prev, const Edge *next, const Point32 &s, const Point32 &t) {
-	btAssert(prev->reverse->target == next->reverse->target);
-	if (prev->next == next) {
-		if (prev->prev == next) {
-			Point64 n = t.cross(s);
-			Point64 m = (*prev->target - *next->reverse->target).cross(*next->target - *next->reverse->target);
-			btAssert(!m.isZero());
+ConvexHullInternal::Orientation ConvexHullInternal::get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t) {
+	btAssert(p_prev->reverse->target == p_next->reverse->target);
+	if (p_prev->next == p_next) {
+		if (p_prev->prev == p_next) {
+			Point64 n = p_t.cross(p_s);
+			Point64 m = (*p_prev->target - *p_next->reverse->target).cross(*p_next->target - *p_next->reverse->target);
+			btAssert(!m.is_zero());
 			int64_t dot = n.dot(m);
 			btAssert(dot != 0);
 			return (dot > 0) ? COUNTER_CLOCKWISE : CLOCKWISE;
 		}
 		return COUNTER_CLOCKWISE;
-	} else if (prev->prev == next) {
+	} else if (p_prev->prev == p_next) {
 		return CLOCKWISE;
 	} else {
 		return NONE;
 	}
 }
 
-ConvexHullInternal::Edge *ConvexHullInternal::findMaxAngle(bool ccw, const Vertex *start, const Point32 &s, const Point64 &rxs, const Point64 &sxrxs, Rational64 &minCot) {
-	Edge *minEdge = NULL;
+ConvexHullInternal::Edge *ConvexHullInternal::find_max_angle(bool p_ccw, const Vertex *p_start, const Point32 &p_s, const Point64 &p_rxs, const Point64 &p_sxrxs, Rational64 &p_min_cot) {
+	Edge *min_edge = nullptr;
 
 #ifdef DEBUG_CONVEX_HULL
-	printf("find max edge for %d\n", start->point.index);
+	printf("find max edge for %d\n", p_start->point.index);
 #endif
-	Edge *e = start->edges;
+	Edge *e = p_start->edges;
 	if (e) {
 		do {
-			if (e->copy > mergeStamp) {
-				Point32 t = *e->target - *start;
-				Rational64 cot(t.dot(sxrxs), t.dot(rxs));
+			if (e->copy > merge_stamp) {
+				Point32 t = *e->target - *p_start;
+				Rational64 cot(t.dot(p_sxrxs), t.dot(p_rxs));
 #ifdef DEBUG_CONVEX_HULL
-				printf("      Angle is %f (%d) for ", Math::atan(cot.toScalar()), (int32_t)cot.isNaN());
+				printf("      Angle is %f (%d) for ", Math::atan(cot.to_scalar()), (int32_t)cot.is_nan());
 				e->print();
 #endif
-				if (cot.isNaN()) {
-					btAssert(ccw ? (t.dot(s) < 0) : (t.dot(s) > 0));
+				if (cot.is_nan()) {
+					btAssert(p_ccw ? (t.dot(p_s) < 0) : (t.dot(p_s) > 0));
 				} else {
 					int32_t cmp;
-					if (minEdge == NULL) {
-						minCot = cot;
-						minEdge = e;
-					} else if ((cmp = cot.compare(minCot)) < 0) {
-						minCot = cot;
-						minEdge = e;
-					} else if ((cmp == 0) && (ccw == (getOrientation(minEdge, e, s, t) == COUNTER_CLOCKWISE))) {
-						minEdge = e;
+					if (min_edge == nullptr) {
+						p_min_cot = cot;
+						min_edge = e;
+					} else if ((cmp = cot.compare(p_min_cot)) < 0) {
+						p_min_cot = cot;
+						min_edge = e;
+					} else if ((cmp == 0) && (p_ccw == (get_orientation(min_edge, e, p_s, t) == COUNTER_CLOCKWISE))) {
+						min_edge = e;
 					}
 				}
 #ifdef DEBUG_CONVEX_HULL
@@ -1234,36 +1246,36 @@ ConvexHullInternal::Edge *ConvexHullInternal::findMaxAngle(bool ccw, const Verte
 #endif
 			}
 			e = e->next;
-		} while (e != start->edges);
+		} while (e != p_start->edges);
 	}
-	return minEdge;
+	return min_edge;
 }
 
-void ConvexHullInternal::findEdgeForCoplanarFaces(Vertex *c0, Vertex *c1, Edge *&e0, Edge *&e1, Vertex *stop0, Vertex *stop1) {
-	Edge *start0 = e0;
-	Edge *start1 = e1;
-	Point32 et0 = start0 ? start0->target->point : c0->point;
-	Point32 et1 = start1 ? start1->target->point : c1->point;
-	Point32 s = c1->point - c0->point;
-	Point64 normal = ((start0 ? start0 : start1)->target->point - c0->point).cross(s);
-	int64_t dist = c0->point.dot(normal);
+void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1) {
+	Edge *start0 = p_e0;
+	Edge *start1 = p_e1;
+	Point32 et0 = start0 ? start0->target->point : p_c0->point;
+	Point32 et1 = start1 ? start1->target->point : p_c1->point;
+	Point32 s = p_c1->point - p_c0->point;
+	Point64 normal = ((start0 ? start0 : start1)->target->point - p_c0->point).cross(s);
+	int64_t dist = p_c0->point.dot(normal);
 	btAssert(!start1 || (start1->target->point.dot(normal) == dist));
 	Point64 perp = s.cross(normal);
-	btAssert(!perp.isZero());
+	btAssert(!perp.is_zero());
 
 #ifdef DEBUG_CONVEX_HULL
-	printf("   Advancing %d %d  (%p %p, %d %d)\n", c0->point.index, c1->point.index, start0, start1, start0 ? start0->target->point.index : -1, start1 ? start1->target->point.index : -1);
+	printf("   Advancing %d %d  (%p %p, %d %d)\n", p_c0->point.index, p_c1->point.index, start0, start1, start0 ? start0->target->point.index : -1, start1 ? start1->target->point.index : -1);
 #endif
 
 	int64_t maxDot0 = et0.dot(perp);
-	if (e0) {
-		while (e0->target != stop0) {
-			Edge *e = e0->reverse->prev;
+	if (p_e0) {
+		while (p_e0->target != p_stop0) {
+			Edge *e = p_e0->reverse->prev;
 			if (e->target->point.dot(normal) < dist) {
 				break;
 			}
 			btAssert(e->target->point.dot(normal) == dist);
-			if (e->copy == mergeStamp) {
+			if (e->copy == merge_stamp) {
 				break;
 			}
 			int64_t dot = e->target->point.dot(perp);
@@ -1271,20 +1283,20 @@ void ConvexHullInternal::findEdgeForCoplanarFaces(Vertex *c0, Vertex *c1, Edge *
 				break;
 			}
 			maxDot0 = dot;
-			e0 = e;
+			p_e0 = e;
 			et0 = e->target->point;
 		}
 	}
 
 	int64_t maxDot1 = et1.dot(perp);
-	if (e1) {
-		while (e1->target != stop1) {
-			Edge *e = e1->reverse->next;
+	if (p_e1) {
+		while (p_e1->target != p_stop1) {
+			Edge *e = p_e1->reverse->next;
 			if (e->target->point.dot(normal) < dist) {
 				break;
 			}
 			btAssert(e->target->point.dot(normal) == dist);
-			if (e->copy == mergeStamp) {
+			if (e->copy == merge_stamp) {
 				break;
 			}
 			int64_t dot = e->target->point.dot(perp);
@@ -1292,7 +1304,7 @@ void ConvexHullInternal::findEdgeForCoplanarFaces(Vertex *c0, Vertex *c1, Edge *
 				break;
 			}
 			maxDot1 = dot;
-			e1 = e;
+			p_e1 = e;
 			et1 = e->target->point;
 		}
 	}
@@ -1306,36 +1318,36 @@ void ConvexHullInternal::findEdgeForCoplanarFaces(Vertex *c0, Vertex *c1, Edge *
 		while (true) {
 			int64_t dy = (et1 - et0).dot(s);
 
-			if (e0 && (e0->target != stop0)) {
-				Edge *f0 = e0->next->reverse;
-				if (f0->copy > mergeStamp) {
+			if (p_e0 && (p_e0->target != p_stop0)) {
+				Edge *f0 = p_e0->next->reverse;
+				if (f0->copy > merge_stamp) {
 					int64_t dx0 = (f0->target->point - et0).dot(perp);
 					int64_t dy0 = (f0->target->point - et0).dot(s);
 					if ((dx0 == 0) ? (dy0 < 0) : ((dx0 < 0) && (Rational64(dy0, dx0).compare(Rational64(dy, dx)) >= 0))) {
 						et0 = f0->target->point;
 						dx = (et1 - et0).dot(perp);
-						e0 = (e0 == start0) ? NULL : f0;
+						p_e0 = (p_e0 == start0) ? nullptr : f0;
 						continue;
 					}
 				}
 			}
 
-			if (e1 && (e1->target != stop1)) {
-				Edge *f1 = e1->reverse->next;
-				if (f1->copy > mergeStamp) {
+			if (p_e1 && (p_e1->target != p_stop1)) {
+				Edge *f1 = p_e1->reverse->next;
+				if (f1->copy > merge_stamp) {
 					Point32 d1 = f1->target->point - et1;
 					if (d1.dot(normal) == 0) {
 						int64_t dx1 = d1.dot(perp);
 						int64_t dy1 = d1.dot(s);
 						int64_t dxn = (f1->target->point - et0).dot(perp);
 						if ((dxn > 0) && ((dx1 == 0) ? (dy1 < 0) : ((dx1 < 0) && (Rational64(dy1, dx1).compare(Rational64(dy, dx)) > 0)))) {
-							e1 = f1;
-							et1 = e1->target->point;
+							p_e1 = f1;
+							et1 = p_e1->target->point;
 							dx = dxn;
 							continue;
 						}
 					} else {
-						btAssert((e1 == start1) && (d1.dot(normal) < 0));
+						btAssert((p_e1 == start1) && (d1.dot(normal) < 0));
 					}
 				}
 			}
@@ -1346,36 +1358,36 @@ void ConvexHullInternal::findEdgeForCoplanarFaces(Vertex *c0, Vertex *c1, Edge *
 		while (true) {
 			int64_t dy = (et1 - et0).dot(s);
 
-			if (e1 && (e1->target != stop1)) {
-				Edge *f1 = e1->prev->reverse;
-				if (f1->copy > mergeStamp) {
+			if (p_e1 && (p_e1->target != p_stop1)) {
+				Edge *f1 = p_e1->prev->reverse;
+				if (f1->copy > merge_stamp) {
 					int64_t dx1 = (f1->target->point - et1).dot(perp);
 					int64_t dy1 = (f1->target->point - et1).dot(s);
 					if ((dx1 == 0) ? (dy1 > 0) : ((dx1 < 0) && (Rational64(dy1, dx1).compare(Rational64(dy, dx)) <= 0))) {
 						et1 = f1->target->point;
 						dx = (et1 - et0).dot(perp);
-						e1 = (e1 == start1) ? NULL : f1;
+						p_e1 = (p_e1 == start1) ? nullptr : f1;
 						continue;
 					}
 				}
 			}
 
-			if (e0 && (e0->target != stop0)) {
-				Edge *f0 = e0->reverse->prev;
-				if (f0->copy > mergeStamp) {
+			if (p_e0 && (p_e0->target != p_stop0)) {
+				Edge *f0 = p_e0->reverse->prev;
+				if (f0->copy > merge_stamp) {
 					Point32 d0 = f0->target->point - et0;
 					if (d0.dot(normal) == 0) {
 						int64_t dx0 = d0.dot(perp);
 						int64_t dy0 = d0.dot(s);
 						int64_t dxn = (et1 - f0->target->point).dot(perp);
 						if ((dxn < 0) && ((dx0 == 0) ? (dy0 > 0) : ((dx0 < 0) && (Rational64(dy0, dx0).compare(Rational64(dy, dx)) < 0)))) {
-							e0 = f0;
-							et0 = e0->target->point;
+							p_e0 = f0;
+							et0 = p_e0->target->point;
 							dx = dxn;
 							continue;
 						}
 					} else {
-						btAssert((e0 == start0) && (d0.dot(normal) < 0));
+						btAssert((p_e0 == start0) && (d0.dot(normal) < 0));
 					}
 				}
 			}
@@ -1388,43 +1400,43 @@ void ConvexHullInternal::findEdgeForCoplanarFaces(Vertex *c0, Vertex *c1, Edge *
 #endif
 }
 
-void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
-	if (!h1.maxXy) {
+void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
+	if (!p_h1.max_xy) {
 		return;
 	}
-	if (!h0.maxXy) {
-		h0 = h1;
+	if (!p_h0.max_xy) {
+		p_h0 = p_h1;
 		return;
 	}
 
-	mergeStamp--;
+	merge_stamp--;
 
-	Vertex *c0 = NULL;
-	Edge *toPrev0 = NULL;
-	Edge *firstNew0 = NULL;
-	Edge *pendingHead0 = NULL;
-	Edge *pendingTail0 = NULL;
-	Vertex *c1 = NULL;
-	Edge *toPrev1 = NULL;
-	Edge *firstNew1 = NULL;
-	Edge *pendingHead1 = NULL;
-	Edge *pendingTail1 = NULL;
+	Vertex *c0 = nullptr;
+	Edge *toPrev0 = nullptr;
+	Edge *firstNew0 = nullptr;
+	Edge *pendingHead0 = nullptr;
+	Edge *pendingTail0 = nullptr;
+	Vertex *c1 = nullptr;
+	Edge *toPrev1 = nullptr;
+	Edge *firstNew1 = nullptr;
+	Edge *pendingHead1 = nullptr;
+	Edge *pendingTail1 = nullptr;
 	Point32 prevPoint;
 
-	if (mergeProjection(h0, h1, c0, c1)) {
+	if (merge_projection(p_h0, p_h1, c0, c1)) {
 		Point32 s = *c1 - *c0;
 		Point64 normal = Point32(0, 0, -1).cross(s);
 		Point64 t = s.cross(normal);
-		btAssert(!t.isZero());
+		btAssert(!t.is_zero());
 
 		Edge *e = c0->edges;
-		Edge *start0 = NULL;
+		Edge *start0 = nullptr;
 		if (e) {
 			do {
 				int64_t dot = (*e->target - *c0).dot(normal);
 				btAssert(dot <= 0);
 				if ((dot == 0) && ((*e->target - *c0).dot(t) > 0)) {
-					if (!start0 || (getOrientation(start0, e, s, Point32(0, 0, -1)) == CLOCKWISE)) {
+					if (!start0 || (get_orientation(start0, e, s, Point32(0, 0, -1)) == CLOCKWISE)) {
 						start0 = e;
 					}
 				}
@@ -1433,13 +1445,13 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 		}
 
 		e = c1->edges;
-		Edge *start1 = NULL;
+		Edge *start1 = nullptr;
 		if (e) {
 			do {
 				int64_t dot = (*e->target - *c1).dot(normal);
 				btAssert(dot <= 0);
 				if ((dot == 0) && ((*e->target - *c1).dot(t) > 0)) {
-					if (!start1 || (getOrientation(start1, e, s, Point32(0, 0, -1)) == COUNTER_CLOCKWISE)) {
+					if (!start1 || (get_orientation(start1, e, s, Point32(0, 0, -1)) == COUNTER_CLOCKWISE)) {
 						start1 = e;
 					}
 				}
@@ -1448,7 +1460,7 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 		}
 
 		if (start0 || start1) {
-			findEdgeForCoplanarFaces(c0, c1, start0, start1, NULL, NULL);
+			find_edge_for_coplanar_faces(c0, c1, start0, start1, nullptr, nullptr);
 			if (start0) {
 				c0 = start0->target;
 			}
@@ -1478,11 +1490,11 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 		printf("\n  Checking %d %d\n", c0->point.index, c1->point.index);
 #endif
 		Rational64 minCot0(0, 0);
-		Edge *min0 = findMaxAngle(false, c0, s, rxs, sxrxs, minCot0);
+		Edge *min0 = find_max_angle(false, c0, s, rxs, sxrxs, minCot0);
 		Rational64 minCot1(0, 0);
-		Edge *min1 = findMaxAngle(true, c1, s, rxs, sxrxs, minCot1);
+		Edge *min1 = find_max_angle(true, c1, s, rxs, sxrxs, minCot1);
 		if (!min0 && !min1) {
-			Edge *e = newEdgePair(c0, c1);
+			Edge *e = new_edge_pair(c0, c1);
 			e->link(e);
 			c0->edges = e;
 
@@ -1496,8 +1508,8 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 #ifdef DEBUG_CONVEX_HULL
 			printf("    -> Result %d\n", cmp);
 #endif
-			if (firstRun || ((cmp >= 0) ? !minCot1.isNegativeInfinity() : !minCot0.isNegativeInfinity())) {
-				Edge *e = newEdgePair(c0, c1);
+			if (firstRun || ((cmp >= 0) ? !minCot1.is_negative_infinity() : !minCot0.is_negative_infinity())) {
+				Edge *e = new_edge_pair(c0, c1);
 				if (pendingTail0) {
 					pendingTail0->prev = e;
 				} else {
@@ -1524,14 +1536,14 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 #endif
 
 			if (cmp == 0) {
-				findEdgeForCoplanarFaces(c0, c1, e0, e1, NULL, NULL);
+				find_edge_for_coplanar_faces(c0, c1, e0, e1, nullptr, nullptr);
 			}
 
 			if ((cmp >= 0) && e1) {
 				if (toPrev1) {
-					for (Edge *e = toPrev1->next, *n = NULL; e != min1; e = n) {
+					for (Edge *e = toPrev1->next, *n = nullptr; e != min1; e = n) {
 						n = e->next;
-						removeEdgePair(e);
+						remove_edge_pair(e);
 					}
 				}
 
@@ -1543,8 +1555,8 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 						firstNew1 = pendingHead1;
 					}
 					pendingTail1->link(min1);
-					pendingHead1 = NULL;
-					pendingTail1 = NULL;
+					pendingHead1 = nullptr;
+					pendingTail1 = nullptr;
 				} else if (!toPrev1) {
 					firstNew1 = min1;
 				}
@@ -1556,9 +1568,9 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 
 			if ((cmp <= 0) && e0) {
 				if (toPrev0) {
-					for (Edge *e = toPrev0->prev, *n = NULL; e != min0; e = n) {
+					for (Edge *e = toPrev0->prev, *n = nullptr; e != min0; e = n) {
 						n = e->prev;
-						removeEdgePair(e);
+						remove_edge_pair(e);
 					}
 				}
 
@@ -1570,8 +1582,8 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 						firstNew0 = pendingHead0;
 					}
 					min0->link(pendingTail0);
-					pendingHead0 = NULL;
-					pendingTail0 = NULL;
+					pendingHead0 = nullptr;
+					pendingTail0 = nullptr;
 				} else if (!toPrev0) {
 					firstNew0 = min0;
 				}
@@ -1583,13 +1595,13 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 		}
 
 		if ((c0 == first0) && (c1 == first1)) {
-			if (toPrev0 == NULL) {
+			if (toPrev0 == nullptr) {
 				pendingHead0->link(pendingTail0);
 				c0->edges = pendingTail0;
 			} else {
-				for (Edge *e = toPrev0->prev, *n = NULL; e != firstNew0; e = n) {
+				for (Edge *e = toPrev0->prev, *n = nullptr; e != firstNew0; e = n) {
 					n = e->prev;
-					removeEdgePair(e);
+					remove_edge_pair(e);
 				}
 				if (pendingTail0) {
 					pendingHead0->link(toPrev0);
@@ -1597,13 +1609,13 @@ void ConvexHullInternal::merge(IntermediateHull &h0, IntermediateHull &h1) {
 				}
 			}
 
-			if (toPrev1 == NULL) {
+			if (toPrev1 == nullptr) {
 				pendingTail1->link(pendingHead1);
 				c1->edges = pendingTail1;
 			} else {
-				for (Edge *e = toPrev1->next, *n = NULL; e != firstNew1; e = n) {
+				for (Edge *e = toPrev1->next, *n = nullptr; e != firstNew1; e = n) {
 					n = e->next;
-					removeEdgePair(e);
+					remove_edge_pair(e);
 				}
 				if (pendingTail1) {
 					toPrev1->link(pendingHead1);
@@ -1624,10 +1636,10 @@ struct PointComparator {
 	}
 };
 
-void ConvexHullInternal::compute(const Vector3 *coords, int32_t count) {
+void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 	AABB aabb;
-	for (int32_t i = 0; i < count; i++) {
-		Vector3 p = coords[i];
+	for (int32_t i = 0; i < p_count; i++) {
+		Vector3 p = p_coords[i];
 		if (i == 0) {
 			aabb.position = p;
 		} else {
@@ -1636,15 +1648,15 @@ void ConvexHullInternal::compute(const Vector3 *coords, int32_t count) {
 	}
 
 	Vector3 s = aabb.size;
-	maxAxis = s.max_axis();
-	minAxis = s.min_axis();
-	if (minAxis == maxAxis) {
-		minAxis = (maxAxis + 1) % 3;
+	max_axis = s.max_axis();
+	min_axis = s.min_axis();
+	if (min_axis == max_axis) {
+		min_axis = (max_axis + 1) % 3;
 	}
-	medAxis = 3 - maxAxis - minAxis;
+	med_axis = 3 - max_axis - min_axis;
 
 	s /= real_t(10216);
-	if (((medAxis + 1) % 3) != maxAxis) {
+	if (((med_axis + 1) % 3) != max_axis) {
 		s *= -1;
 	}
 	scaling = s;
@@ -1662,78 +1674,78 @@ void ConvexHullInternal::compute(const Vector3 *coords, int32_t count) {
 	center = aabb.position;
 
 	LocalVector<Point32> points;
-	points.resize(count);
-	for (int32_t i = 0; i < count; i++) {
-		Vector3 p = coords[i];
+	points.resize(p_count);
+	for (int32_t i = 0; i < p_count; i++) {
+		Vector3 p = p_coords[i];
 		p = (p - center) * s;
-		points[i].x = (int32_t)p[medAxis];
-		points[i].y = (int32_t)p[maxAxis];
-		points[i].z = (int32_t)p[minAxis];
+		points[i].x = (int32_t)p[med_axis];
+		points[i].y = (int32_t)p[max_axis];
+		points[i].z = (int32_t)p[min_axis];
 		points[i].index = i;
 	}
 
 	points.sort_custom<PointComparator>();
 
-	vertexPool.reset();
-	vertexPool.setArraySize(count);
-	originalVertices.resize(count);
-	for (int32_t i = 0; i < count; i++) {
-		Vertex *v = vertexPool.newObject();
-		v->edges = NULL;
+	vertex_pool.reset();
+	vertex_pool.set_array_size(p_count);
+	original_vertices.resize(p_count);
+	for (int32_t i = 0; i < p_count; i++) {
+		Vertex *v = vertex_pool.new_object();
+		v->edges = nullptr;
 		v->point = points[i];
 		v->copy = -1;
-		originalVertices[i] = v;
+		original_vertices[i] = v;
 	}
 
 	points.clear();
 
-	edgePool.reset();
-	edgePool.setArraySize(6 * count);
+	edge_pool.reset();
+	edge_pool.set_array_size(6 * p_count);
 
-	usedEdgePairs = 0;
-	maxUsedEdgePairs = 0;
+	used_edge_pairs = 0;
+	max_used_edge_pairs = 0;
 
-	mergeStamp = -3;
+	merge_stamp = -3;
 
 	IntermediateHull hull;
-	computeInternal(0, count, hull);
-	vertexList = hull.minXy;
+	compute_internal(0, p_count, hull);
+	vertex_list = hull.min_xy;
 #ifdef DEBUG_CONVEX_HULL
-	printf("max. edges %d (3v = %d)", maxUsedEdgePairs, 3 * count);
+	printf("max. edges %d (3v = %d)", max_used_edge_pairs, 3 * p_count);
 #endif
 }
 
-Vector3 ConvexHullInternal::toGdVector(const Point32 &v) {
+Vector3 ConvexHullInternal::to_gd_vector(const Point32 &p_v) {
 	Vector3 p;
-	p[medAxis] = real_t(v.x);
-	p[maxAxis] = real_t(v.y);
-	p[minAxis] = real_t(v.z);
+	p[med_axis] = real_t(p_v.x);
+	p[max_axis] = real_t(p_v.y);
+	p[min_axis] = real_t(p_v.z);
 	return p * scaling;
 }
 
-Vector3 ConvexHullInternal::getGdNormal(Face *face) {
-	return toGdVector(face->dir0).cross(toGdVector(face->dir1)).normalized();
+Vector3 ConvexHullInternal::get_gd_normal(Face *p_face) {
+	return to_gd_vector(p_face->dir0).cross(to_gd_vector(p_face->dir1)).normalized();
 }
 
-Vector3 ConvexHullInternal::getCoordinates(const Vertex *v) {
+Vector3 ConvexHullInternal::get_coordinates(const Vertex *p_v) {
 	Vector3 p;
-	p[medAxis] = v->xvalue();
-	p[maxAxis] = v->yvalue();
-	p[minAxis] = v->zvalue();
+	p[med_axis] = p_v->xvalue();
+	p[max_axis] = p_v->yvalue();
+	p[min_axis] = p_v->zvalue();
 	return p * scaling + center;
 }
 
-real_t ConvexHullInternal::shrink(real_t amount, real_t clampAmount) {
-	if (!vertexList) {
+real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
+	if (!vertex_list) {
 		return 0;
 	}
-	int32_t stamp = --mergeStamp;
+	int32_t stamp = --merge_stamp;
 	LocalVector<Vertex *> stack;
-	vertexList->copy = stamp;
-	stack.push_back(vertexList);
+	vertex_list->copy = stamp;
+	stack.push_back(vertex_list);
 	LocalVector<Face *> faces;
 
-	Point32 ref = vertexList->point;
+	Point32 ref = vertex_list->point;
 	Int128 hullCenterX(0, 0);
 	Int128 hullCenterY(0, 0);
 	Int128 hullCenterZ(0, 0);
@@ -1750,13 +1762,13 @@ real_t ConvexHullInternal::shrink(real_t amount, real_t clampAmount) {
 					stack.push_back(e->target);
 				}
 				if (e->copy != stamp) {
-					Face *face = facePool.newObject();
+					Face *face = face_pool.new_object();
 					face->init(e->target, e->reverse->prev->target, v);
 					faces.push_back(face);
 					Edge *f = e;
 
-					Vertex *a = NULL;
-					Vertex *b = NULL;
+					Vertex *a = nullptr;
+					Vertex *b = nullptr;
 					do {
 						if (a && b) {
 							int64_t vol = (v->point - ref).dot((a->point - ref).cross(b->point - ref));
@@ -1783,24 +1795,24 @@ real_t ConvexHullInternal::shrink(real_t amount, real_t clampAmount) {
 		}
 	}
 
-	if (volume.getSign() <= 0) {
+	if (volume.get_sign() <= 0) {
 		return 0;
 	}
 
 	Vector3 hullCenter;
-	hullCenter[medAxis] = hullCenterX.toScalar();
-	hullCenter[maxAxis] = hullCenterY.toScalar();
-	hullCenter[minAxis] = hullCenterZ.toScalar();
-	hullCenter /= 4 * volume.toScalar();
+	hullCenter[med_axis] = hullCenterX.to_scalar();
+	hullCenter[max_axis] = hullCenterY.to_scalar();
+	hullCenter[min_axis] = hullCenterZ.to_scalar();
+	hullCenter /= 4 * volume.to_scalar();
 	hullCenter *= scaling;
 
 	int32_t faceCount = faces.size();
 
-	if (clampAmount > 0) {
+	if (p_clamp_amount > 0) {
 		real_t minDist = FLT_MAX;
 		for (int32_t i = 0; i < faceCount; i++) {
-			Vector3 normal = getGdNormal(faces[i]);
-			real_t dist = normal.dot(toGdVector(faces[i]->origin) - hullCenter);
+			Vector3 normal = get_gd_normal(faces[i]);
+			real_t dist = normal.dot(to_gd_vector(faces[i]->origin) - hullCenter);
 			if (dist < minDist) {
 				minDist = dist;
 			}
@@ -1810,7 +1822,7 @@ real_t ConvexHullInternal::shrink(real_t amount, real_t clampAmount) {
 			return 0;
 		}
 
-		amount = MIN(amount, minDist * clampAmount);
+		p_amount = MIN(p_amount, minDist * p_clamp_amount);
 	}
 
 	uint32_t seed = 243703;
@@ -1819,16 +1831,16 @@ real_t ConvexHullInternal::shrink(real_t amount, real_t clampAmount) {
 	}
 
 	for (int32_t i = 0; i < faceCount; i++) {
-		if (!shiftFace(faces[i], amount, stack)) {
-			return -amount;
+		if (!shift_face(faces[i], p_amount, stack)) {
+			return -p_amount;
 		}
 	}
 
-	return amount;
+	return p_amount;
 }
 
-bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex *> stack) {
-	Vector3 origShift = getGdNormal(face) * -amount;
+bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> p_stack) {
+	Vector3 origShift = get_gd_normal(p_face) * -p_amount;
 	if (scaling[0] != 0) {
 		origShift[0] /= scaling[0];
 	}
@@ -1838,32 +1850,32 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 	if (scaling[2] != 0) {
 		origShift[2] /= scaling[2];
 	}
-	Point32 shift((int32_t)origShift[medAxis], (int32_t)origShift[maxAxis], (int32_t)origShift[minAxis]);
-	if (shift.isZero()) {
+	Point32 shift((int32_t)origShift[med_axis], (int32_t)origShift[max_axis], (int32_t)origShift[min_axis]);
+	if (shift.is_zero()) {
 		return true;
 	}
-	Point64 normal = face->getNormal();
+	Point64 normal = p_face->getNormal();
 #ifdef DEBUG_CONVEX_HULL
-	printf("\nShrinking face (%d %d %d) (%d %d %d) (%d %d %d) by (%d %d %d)\n",
-			face->origin.x, face->origin.y, face->origin.z, face->dir0.x, face->dir0.y, face->dir0.z, face->dir1.x, face->dir1.y, face->dir1.z, shift.x, shift.y, shift.z);
+	printf("\nShrinking p_face (%d %d %d) (%d %d %d) (%d %d %d) by (%d %d %d)\n",
+			p_face->origin.x, p_face->origin.y, p_face->origin.z, p_face->dir0.x, p_face->dir0.y, p_face->dir0.z, p_face->dir1.x, p_face->dir1.y, p_face->dir1.z, shift.x, shift.y, shift.z);
 #endif
-	int64_t origDot = face->origin.dot(normal);
-	Point32 shiftedOrigin = face->origin + shift;
+	int64_t origDot = p_face->origin.dot(normal);
+	Point32 shiftedOrigin = p_face->origin + shift;
 	int64_t shiftedDot = shiftedOrigin.dot(normal);
 	btAssert(shiftedDot <= origDot);
 	if (shiftedDot >= origDot) {
 		return false;
 	}
 
-	Edge *intersection = NULL;
+	Edge *intersection = nullptr;
 
-	Edge *startEdge = face->nearbyVertex->edges;
+	Edge *startEdge = p_face->nearby_vertex->edges;
 #ifdef DEBUG_CONVEX_HULL
 	printf("Start edge is ");
 	startEdge->print();
 	printf(", normal is (%lld %lld %lld), shifted dot is %lld\n", normal.x, normal.y, normal.z, shiftedDot);
 #endif
-	Rational128 optDot = face->nearbyVertex->dot(normal);
+	Rational128 optDot = p_face->nearby_vertex->dot(normal);
 	int32_t cmp = optDot.compare(shiftedDot);
 #ifdef SHOW_ITERATIONS
 	int32_t n = 0;
@@ -1879,7 +1891,7 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 #ifdef DEBUG_CONVEX_HULL
 			printf("Moving downwards, edge is ");
 			e->print();
-			printf(", dot is %f (%f %lld)\n", (float)dot.toScalar(), (float)optDot.toScalar(), shiftedDot);
+			printf(", dot is %f (%f %lld)\n", (float)dot.to_scalar(), (float)optDot.to_scalar(), shiftedDot);
 #endif
 			if (dot.compare(optDot) < 0) {
 				int32_t c = dot.compare(shiftedDot);
@@ -1909,7 +1921,7 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 #ifdef DEBUG_CONVEX_HULL
 			printf("Moving upwards, edge is ");
 			e->print();
-			printf(", dot is %f (%f %lld)\n", (float)dot.toScalar(), (float)optDot.toScalar(), shiftedDot);
+			printf(", dot is %f (%f %lld)\n", (float)dot.to_scalar(), (float)optDot.to_scalar(), shiftedDot);
 #endif
 			if (dot.compare(optDot) > 0) {
 				cmp = dot.compare(shiftedDot);
@@ -1957,9 +1969,9 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 #endif
 	}
 
-	Edge *firstIntersection = NULL;
-	Edge *faceEdge = NULL;
-	Edge *firstFaceEdge = NULL;
+	Edge *firstIntersection = nullptr;
+	Edge *faceEdge = nullptr;
+	Edge *firstFaceEdge = nullptr;
 
 #ifdef SHOW_ITERATIONS
 	int32_t m = 0;
@@ -2035,14 +2047,14 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 			}
 		}
 #ifdef SHOW_ITERATIONS
-		printf("Needed %d iterations to find other intersection of face\n", n);
+		printf("Needed %d iterations to find other intersection of p_face\n", n);
 #endif
 
 		if (cmp > 0) {
 			Vertex *removed = intersection->target;
 			e = intersection->reverse;
 			if (e->prev == e) {
-				removed->edges = NULL;
+				removed->edges = nullptr;
 			} else {
 				removed->edges = e->prev;
 				e->prev->link(e->next);
@@ -2054,20 +2066,20 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 
 			Point64 n0 = intersection->face->getNormal();
 			Point64 n1 = intersection->reverse->face->getNormal();
-			int64_t m00 = face->dir0.dot(n0);
-			int64_t m01 = face->dir1.dot(n0);
-			int64_t m10 = face->dir0.dot(n1);
-			int64_t m11 = face->dir1.dot(n1);
+			int64_t m00 = p_face->dir0.dot(n0);
+			int64_t m01 = p_face->dir1.dot(n0);
+			int64_t m10 = p_face->dir0.dot(n1);
+			int64_t m11 = p_face->dir1.dot(n1);
 			int64_t r0 = (intersection->face->origin - shiftedOrigin).dot(n0);
 			int64_t r1 = (intersection->reverse->face->origin - shiftedOrigin).dot(n1);
 			Int128 det = Int128::mul(m00, m11) - Int128::mul(m01, m10);
-			btAssert(det.getSign() != 0);
-			Vertex *v = vertexPool.newObject();
+			btAssert(det.get_sign() != 0);
+			Vertex *v = vertex_pool.new_object();
 			v->point.index = -1;
 			v->copy = -1;
-			v->point128 = PointR128(Int128::mul(face->dir0.x * r0, m11) - Int128::mul(face->dir0.x * r1, m01) + Int128::mul(face->dir1.x * r1, m00) - Int128::mul(face->dir1.x * r0, m10) + det * shiftedOrigin.x,
-					Int128::mul(face->dir0.y * r0, m11) - Int128::mul(face->dir0.y * r1, m01) + Int128::mul(face->dir1.y * r1, m00) - Int128::mul(face->dir1.y * r0, m10) + det * shiftedOrigin.y,
-					Int128::mul(face->dir0.z * r0, m11) - Int128::mul(face->dir0.z * r1, m01) + Int128::mul(face->dir1.z * r1, m00) - Int128::mul(face->dir1.z * r0, m10) + det * shiftedOrigin.z,
+			v->point128 = PointR128(Int128::mul(p_face->dir0.x * r0, m11) - Int128::mul(p_face->dir0.x * r1, m01) + Int128::mul(p_face->dir1.x * r1, m00) - Int128::mul(p_face->dir1.x * r0, m10) + det * shiftedOrigin.x,
+					Int128::mul(p_face->dir0.y * r0, m11) - Int128::mul(p_face->dir0.y * r1, m01) + Int128::mul(p_face->dir1.y * r1, m00) - Int128::mul(p_face->dir1.y * r0, m10) + det * shiftedOrigin.y,
+					Int128::mul(p_face->dir0.z * r0, m11) - Int128::mul(p_face->dir0.z * r1, m01) + Int128::mul(p_face->dir1.z * r1, m00) - Int128::mul(p_face->dir1.z * r0, m10) + det * shiftedOrigin.z,
 					det);
 			v->point.x = (int32_t)v->point128.xvalue();
 			v->point.y = (int32_t)v->point128.yvalue();
@@ -2075,13 +2087,13 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 			intersection->target = v;
 			v->edges = e;
 
-			stack.push_back(v);
-			stack.push_back(removed);
-			stack.push_back(NULL);
+			p_stack.push_back(v);
+			p_stack.push_back(removed);
+			p_stack.push_back(nullptr);
 		}
 
 		if (cmp || prevCmp || (prevIntersection->reverse->next->target != intersection->target)) {
-			faceEdge = newEdgePair(prevIntersection->target, intersection->target);
+			faceEdge = new_edge_pair(prevIntersection->target, intersection->target);
 			if (prevCmp == 0) {
 				faceEdge->link(prevIntersection->reverse->next);
 			}
@@ -2100,19 +2112,19 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 			if (prevCmp > 0) {
 				faceEdge->link(prevFaceEdge->reverse);
 			} else if (faceEdge != prevFaceEdge->reverse) {
-				stack.push_back(prevFaceEdge->target);
+				p_stack.push_back(prevFaceEdge->target);
 				while (faceEdge->next != prevFaceEdge->reverse) {
 					Vertex *removed = faceEdge->next->target;
-					removeEdgePair(faceEdge->next);
-					stack.push_back(removed);
+					remove_edge_pair(faceEdge->next);
+					p_stack.push_back(removed);
 #ifdef DEBUG_CONVEX_HULL
 					printf("2: Removed part contains (%d %d %d)\n", removed->point.x, removed->point.y, removed->point.z);
 #endif
 				}
-				stack.push_back(NULL);
+				p_stack.push_back(nullptr);
 			}
 		}
-		faceEdge->face = face;
+		faceEdge->face = p_face;
 		faceEdge->reverse->face = intersection->face;
 
 		if (!firstFaceEdge) {
@@ -2128,20 +2140,20 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 		firstIntersection->reverse->link(firstFaceEdge);
 		firstFaceEdge->link(faceEdge->reverse);
 	} else if (firstFaceEdge != faceEdge->reverse) {
-		stack.push_back(faceEdge->target);
+		p_stack.push_back(faceEdge->target);
 		while (firstFaceEdge->next != faceEdge->reverse) {
 			Vertex *removed = firstFaceEdge->next->target;
-			removeEdgePair(firstFaceEdge->next);
-			stack.push_back(removed);
+			remove_edge_pair(firstFaceEdge->next);
+			p_stack.push_back(removed);
 #ifdef DEBUG_CONVEX_HULL
 			printf("3: Removed part contains (%d %d %d)\n", removed->point.x, removed->point.y, removed->point.z);
 #endif
 		}
-		stack.push_back(NULL);
+		p_stack.push_back(nullptr);
 	}
 
-	btAssert(stack.size() > 0);
-	vertexList = stack[0];
+	btAssert(p_stack.size() > 0);
+	vertex_list = p_stack[0];
 
 #ifdef DEBUG_CONVEX_HULL
 	printf("Removing part\n");
@@ -2150,31 +2162,31 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 	n = 0;
 #endif
 	uint32_t pos = 0;
-	while (pos < stack.size()) {
-		uint32_t end = stack.size();
+	while (pos < p_stack.size()) {
+		uint32_t end = p_stack.size();
 		while (pos < end) {
-			Vertex *kept = stack[pos++];
+			Vertex *kept = p_stack[pos++];
 #ifdef DEBUG_CONVEX_HULL
 			kept->print();
 #endif
 			bool deeper = false;
 			Vertex *removed;
-			while ((removed = stack[pos++]) != NULL) {
+			while ((removed = p_stack[pos++]) != nullptr) {
 #ifdef SHOW_ITERATIONS
 				n++;
 #endif
-				kept->receiveNearbyFaces(removed);
+				kept->receive_nearby_faces(removed);
 				while (removed->edges) {
 					if (!deeper) {
 						deeper = true;
-						stack.push_back(kept);
+						p_stack.push_back(kept);
 					}
-					stack.push_back(removed->edges->target);
-					removeEdgePair(removed->edges);
+					p_stack.push_back(removed->edges->target);
+					remove_edge_pair(removed->edges);
 				}
 			}
 			if (deeper) {
-				stack.push_back(NULL);
+				p_stack.push_back(nullptr);
 			}
 		}
 	}
@@ -2182,27 +2194,27 @@ bool ConvexHullInternal::shiftFace(Face *face, real_t amount, LocalVector<Vertex
 	printf("Needed %d iterations to remove part\n", n);
 #endif
 
-	stack.resize(0);
-	face->origin = shiftedOrigin;
+	p_stack.resize(0);
+	p_face->origin = shiftedOrigin;
 
 	return true;
 }
 
-static int32_t getVertexCopy(ConvexHullInternal::Vertex *vertex, LocalVector<ConvexHullInternal::Vertex *> &vertices) {
-	int32_t index = vertex->copy;
+static int32_t get_vertex_copy(ConvexHullInternal::Vertex *p_vertex, LocalVector<ConvexHullInternal::Vertex *> &p_vertices) {
+	int32_t index = p_vertex->copy;
 	if (index < 0) {
-		index = vertices.size();
-		vertex->copy = index;
-		vertices.push_back(vertex);
+		index = p_vertices.size();
+		p_vertex->copy = index;
+		p_vertices.push_back(p_vertex);
 #ifdef DEBUG_CONVEX_HULL
-		printf("Vertex %d gets index *%d\n", vertex->point.index, index);
+		printf("Vertex %d gets index *%d\n", p_vertex->point.index, index);
 #endif
 	}
 	return index;
 }
 
-real_t ConvexHullComputer::compute(const Vector3 *coords, int32_t count, real_t shrink, real_t shrinkClamp) {
-	if (count <= 0) {
+real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, real_t p_shrink, real_t p_shrink_clamp) {
+	if (p_count <= 0) {
 		vertices.clear();
 		edges.clear();
 		faces.clear();
@@ -2210,10 +2222,10 @@ real_t ConvexHullComputer::compute(const Vector3 *coords, int32_t count, real_t 
 	}
 
 	ConvexHullInternal hull;
-	hull.compute(coords, count);
+	hull.compute(p_coords, p_count);
 
 	real_t shift = 0;
-	if ((shrink > 0) && ((shift = hull.shrink(shrink, shrinkClamp)) < 0)) {
+	if ((p_shrink > 0) && ((shift = hull.shrink(p_shrink, p_shrink_clamp)) < 0)) {
 		vertices.clear();
 		edges.clear();
 		faces.clear();
@@ -2225,11 +2237,11 @@ real_t ConvexHullComputer::compute(const Vector3 *coords, int32_t count, real_t 
 	faces.resize(0);
 
 	LocalVector<ConvexHullInternal::Vertex *> oldVertices;
-	getVertexCopy(hull.vertexList, oldVertices);
+	get_vertex_copy(hull.vertex_list, oldVertices);
 	int32_t copied = 0;
 	while (copied < (int32_t)oldVertices.size()) {
 		ConvexHullInternal::Vertex *v = oldVertices[copied];
-		vertices.push_back(hull.getCoordinates(v));
+		vertices.push_back(hull.get_coordinates(v));
 		ConvexHullInternal::Edge *firstEdge = v->edges;
 		if (firstEdge) {
 			int32_t firstCopy = -1;
@@ -2246,10 +2258,10 @@ real_t ConvexHullComputer::compute(const Vector3 *coords, int32_t count, real_t 
 					e->reverse->copy = s + 1;
 					c->reverse = 1;
 					r->reverse = -1;
-					c->targetVertex = getVertexCopy(e->target, oldVertices);
-					r->targetVertex = copied;
+					c->target_vertex = get_vertex_copy(e->target, oldVertices);
+					r->target_vertex = copied;
 #ifdef DEBUG_CONVEX_HULL
-					printf("      CREATE: Vertex *%d has edge to *%d\n", copied, c->getTargetVertex());
+					printf("      CREATE: Vertex *%d has edge to *%d\n", copied, c->get_target_vertex());
 #endif
 				}
 				if (prevCopy >= 0) {
@@ -2273,13 +2285,13 @@ real_t ConvexHullComputer::compute(const Vector3 *coords, int32_t count, real_t 
 			do {
 				if (e->copy >= 0) {
 #ifdef DEBUG_CONVEX_HULL
-					printf("Vertex *%d has edge to *%d\n", i, edges[e->copy].getTargetVertex());
+					printf("Vertex *%d has edge to *%d\n", i, edges[e->copy].get_target_vertex());
 #endif
 					faces.push_back(e->copy);
 					ConvexHullInternal::Edge *f = e;
 					do {
 #ifdef DEBUG_CONVEX_HULL
-						printf("   Face *%d\n", edges[f->copy].getTargetVertex());
+						printf("   Face *%d\n", edges[f->copy].get_target_vertex());
 #endif
 						f->copy = -1;
 						f = f->reverse->prev;
@@ -2307,8 +2319,8 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry:
 
 	r_mesh.edges.resize(ch.edges.size());
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
-		r_mesh.edges.write[i].a = (&ch.edges[i])->getSourceVertex();
-		r_mesh.edges.write[i].b = (&ch.edges[i])->getTargetVertex();
+		r_mesh.edges.write[i].a = (&ch.edges[i])->get_source_vertex();
+		r_mesh.edges.write[i].b = (&ch.edges[i])->get_target_vertex();
 	}
 
 	r_mesh.faces.resize(ch.faces.size());
@@ -2318,9 +2330,9 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry:
 		Geometry::MeshData::Face &face = r_mesh.faces.write[i];
 
 		do {
-			face.indices.push_back(e->getTargetVertex());
+			face.indices.push_back(e->get_target_vertex());
 
-			e = e->getNextEdgeOfFace();
+			e = e->get_next_edge_of_face();
 		} while (e != e_start);
 
 		// compute normal
