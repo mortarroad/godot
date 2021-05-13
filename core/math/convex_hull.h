@@ -57,9 +57,9 @@ class ConvexHullComputer {
 public:
 	class Edge {
 	private:
-		int32_t next;
-		int32_t reverse;
-		int32_t target_vertex;
+		int32_t next = 0;
+		int32_t reverse = 0;
+		int32_t target_vertex = 0;
 
 		friend class ConvexHullComputer;
 

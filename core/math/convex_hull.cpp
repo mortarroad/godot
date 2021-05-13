@@ -89,10 +89,10 @@ public:
 
 	class Point32 {
 	public:
-		int32_t x;
-		int32_t y;
-		int32_t z;
-		int32_t index;
+		int32_t x = 0;
+		int32_t y = 0;
+		int32_t z = 0;
+		int32_t index = -1;
 
 		Point32() {
 		}
@@ -101,7 +101,6 @@ public:
 			x = p_x;
 			y = p_y;
 			z = p_z;
-			index = -1;
 		}
 
 		bool operator==(const Point32 &b) const {
@@ -143,8 +142,8 @@ public:
 
 	class Int128 {
 	public:
-		uint64_t low;
-		uint64_t high;
+		uint64_t low = 0;
+		uint64_t high = 0;
 
 		Int128() {
 		}
@@ -449,12 +448,12 @@ public:
 
 	class Edge {
 	public:
-		Edge *next;
-		Edge *prev;
-		Edge *reverse;
-		Vertex *target;
-		Face *face;
-		int32_t copy;
+		Edge *next = nullptr;
+		Edge *prev = nullptr;
+		Edge *reverse = nullptr;
+		Vertex *target = nullptr;
+		Face *face = nullptr;
+		int32_t copy = -1;
 
 		~Edge() {
 			next = nullptr;
@@ -619,7 +618,7 @@ private:
 		int32_t array_size = 256;
 
 	public:
-		Pool()  {
+		Pool() {
 		}
 
 		~Pool() {
@@ -669,12 +668,12 @@ private:
 	Pool<Edge> edge_pool;
 	Pool<Face> face_pool;
 	LocalVector<Vertex *> original_vertices;
-	int32_t merge_stamp;
-	int32_t min_axis;
-	int32_t med_axis;
-	int32_t max_axis;
-	int32_t used_edge_pairs;
-	int32_t max_used_edge_pairs;
+	int32_t merge_stamp = 0;
+	int32_t min_axis = 0;
+	int32_t med_axis = 0;
+	int32_t max_axis = 0;
+	int32_t used_edge_pairs = 0;
+	int32_t max_used_edge_pairs = 0;
 
 	static Orientation get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t);
 	Edge *find_max_angle(bool p_ccw, const Vertex *p_start, const Point32 &p_s, const Point64 &p_rxs, const Point64 &p_ssxrxs, Rational64 &p_min_cot);
