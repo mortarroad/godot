@@ -60,9 +60,16 @@ subject to the following restrictions:
 // -- GODOT end --
 
 #ifdef DEBUG_ENABLED
-#define CHULL_ASSERT(m_cond) do { if (unlikely(!(m_cond))) { ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed.") } } while(0)
+#define CHULL_ASSERT(m_cond)                                    \
+	do {                                                        \
+		if (unlikely(!(m_cond))) {                              \
+			ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed.") \
+		}                                                       \
+	} while (0)
 #else
-#define CHULL_ASSERT(m_cond) do { } while(0)
+#define CHULL_ASSERT(m_cond) \
+	do {                     \
+	} while (0)
 #endif
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
