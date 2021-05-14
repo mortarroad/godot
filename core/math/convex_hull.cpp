@@ -54,13 +54,20 @@ subject to the following restrictions:
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS
 
+// -- GODOT start --
+// Assembly optimizations are not used at the moment.
+//#define USE_X86_64_ASM
+// -- GODOT end --
+
+#ifdef DEBUG_ENABLED
+#define CHULL_ASSERT(m_cond) do { if (unlikely(!(m_cond))) { ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed.") } } while(0)
+#else
+#define CHULL_ASSERT(m_cond) do { } while(0)
+#endif
+
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
 #include <stdio.h>
 #endif
-
-// TODO(mortarroad): how to handle assertions in godot? some of these are probably in tight loops, i.e. we only want them for debug.
-#include <assert.h>
-#define btAssert(x) assert(x)
 
 // Convex hull implementation based on Preparata and Hong
 // Ole Kniemeyer, MAXON Computer GmbH
@@ -438,7 +445,7 @@ public:
 				last_nearby_face = p_src->last_nearby_face;
 			}
 			for (Face *f = p_src->first_nearby_face; f; f = f->next_with_same_nearby_vertex) {
-				btAssert(f->nearby_vertex == p_src);
+				CHULL_ASSERT(f->nearby_vertex == p_src);
 				f->nearby_vertex = this;
 			}
 			p_src->first_nearby_face = nullptr;
@@ -464,7 +471,7 @@ public:
 		}
 
 		void link(Edge *n) {
-			btAssert(reverse->target == n->reverse->target);
+			CHULL_ASSERT(reverse->target == n->reverse->target);
 			next = n;
 			n->prev = this;
 		}
@@ -685,7 +692,7 @@ private:
 		Edge *n = p_edge->next;
 		Edge *r = p_edge->reverse;
 
-		btAssert(p_edge->target && r->target);
+		CHULL_ASSERT(p_edge->target && r->target);
 
 		if (n != p_edge) {
 			n->prev = p_edge->prev;
@@ -869,7 +876,7 @@ int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
 }
 
 ConvexHullInternal::Edge *ConvexHullInternal::new_edge_pair(Vertex *p_from, Vertex *p_to) {
-	btAssert(p_from && p_to);
+	CHULL_ASSERT(p_from && p_to);
 	Edge *e = edge_pool.new_object();
 	Edge *r = edge_pool.new_object();
 	e->reverse = r;
@@ -891,14 +898,14 @@ bool ConvexHullInternal::merge_projection(IntermediateHull &r_h0, IntermediateHu
 	Vertex *v0 = r_h0.max_yx;
 	Vertex *v1 = r_h1.min_yx;
 	if ((v0->point.x == v1->point.x) && (v0->point.y == v1->point.y)) {
-		btAssert(v0->point.z < v1->point.z);
+		CHULL_ASSERT(v0->point.z < v1->point.z);
 		Vertex *v1p = v1->prev;
 		if (v1p == v1) {
 			r_c0 = v0;
 			if (v1->edges) {
-				btAssert(v1->edges->next == v1->edges);
+				CHULL_ASSERT(v1->edges->next == v1->edges);
 				v1 = v1->edges->target;
-				btAssert(v1->edges->next == v1->edges);
+				CHULL_ASSERT(v1->edges->next == v1->edges);
 			}
 			r_c1 = v1;
 			return false;
@@ -1061,7 +1068,7 @@ void ConvexHullInternal::compute_internal(int32_t p_start, int32_t p_end, Interm
 						w = v;
 						v = t;
 					}
-					btAssert(v->point.z < w->point.z);
+					CHULL_ASSERT(v->point.z < w->point.z);
 					v->next = v;
 					v->prev = v;
 					r_result.min_xy = v;
@@ -1192,14 +1199,14 @@ void ConvexHullInternal::Vertex::print_graph() {
 #endif
 
 ConvexHullInternal::Orientation ConvexHullInternal::get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t) {
-	btAssert(p_prev->reverse->target == p_next->reverse->target);
+	CHULL_ASSERT(p_prev->reverse->target == p_next->reverse->target);
 	if (p_prev->next == p_next) {
 		if (p_prev->prev == p_next) {
 			Point64 n = p_t.cross(p_s);
 			Point64 m = (*p_prev->target - *p_next->reverse->target).cross(*p_next->target - *p_next->reverse->target);
-			btAssert(!m.is_zero());
+			CHULL_ASSERT(!m.is_zero());
 			int64_t dot = n.dot(m);
-			btAssert(dot != 0);
+			CHULL_ASSERT(dot != 0);
 			return (dot > 0) ? COUNTER_CLOCKWISE : CLOCKWISE;
 		}
 		return COUNTER_CLOCKWISE;
@@ -1227,7 +1234,7 @@ ConvexHullInternal::Edge *ConvexHullInternal::find_max_angle(bool p_ccw, const V
 				e->print();
 #endif
 				if (cot.is_nan()) {
-					btAssert(p_ccw ? (t.dot(p_s) < 0) : (t.dot(p_s) > 0));
+					CHULL_ASSERT(p_ccw ? (t.dot(p_s) < 0) : (t.dot(p_s) > 0));
 				} else {
 					int32_t cmp;
 					if (min_edge == nullptr) {
@@ -1258,9 +1265,9 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 	Point32 s = p_c1->point - p_c0->point;
 	Point64 normal = ((start0 ? start0 : start1)->target->point - p_c0->point).cross(s);
 	int64_t dist = p_c0->point.dot(normal);
-	btAssert(!start1 || (start1->target->point.dot(normal) == dist));
+	CHULL_ASSERT(!start1 || (start1->target->point.dot(normal) == dist));
 	Point64 perp = s.cross(normal);
-	btAssert(!perp.is_zero());
+	CHULL_ASSERT(!perp.is_zero());
 
 #ifdef DEBUG_CONVEX_HULL
 	printf("   Advancing %d %d  (%p %p, %d %d)\n", p_c0->point.index, p_c1->point.index, start0, start1, start0 ? start0->target->point.index : -1, start1 ? start1->target->point.index : -1);
@@ -1273,7 +1280,7 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 			if (e->target->point.dot(normal) < dist) {
 				break;
 			}
-			btAssert(e->target->point.dot(normal) == dist);
+			CHULL_ASSERT(e->target->point.dot(normal) == dist);
 			if (e->copy == merge_stamp) {
 				break;
 			}
@@ -1294,7 +1301,7 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 			if (e->target->point.dot(normal) < dist) {
 				break;
 			}
-			btAssert(e->target->point.dot(normal) == dist);
+			CHULL_ASSERT(e->target->point.dot(normal) == dist);
 			if (e->copy == merge_stamp) {
 				break;
 			}
@@ -1346,7 +1353,7 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 							continue;
 						}
 					} else {
-						btAssert((p_e1 == start1) && (d1.dot(normal) < 0));
+						CHULL_ASSERT((p_e1 == start1) && (d1.dot(normal) < 0));
 					}
 				}
 			}
@@ -1386,7 +1393,7 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 							continue;
 						}
 					} else {
-						btAssert((p_e0 == start0) && (d0.dot(normal) < 0));
+						CHULL_ASSERT((p_e0 == start0) && (d0.dot(normal) < 0));
 					}
 				}
 			}
@@ -1426,14 +1433,14 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 		Point32 s = *c1 - *c0;
 		Point64 normal = Point32(0, 0, -1).cross(s);
 		Point64 t = s.cross(normal);
-		btAssert(!t.is_zero());
+		CHULL_ASSERT(!t.is_zero());
 
 		Edge *e = c0->edges;
 		Edge *start0 = nullptr;
 		if (e) {
 			do {
 				int64_t dot = (*e->target - *c0).dot(normal);
-				btAssert(dot <= 0);
+				CHULL_ASSERT(dot <= 0);
 				if ((dot == 0) && ((*e->target - *c0).dot(t) > 0)) {
 					if (!start0 || (get_orientation(start0, e, s, Point32(0, 0, -1)) == CLOCKWISE)) {
 						start0 = e;
@@ -1448,7 +1455,7 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 		if (e) {
 			do {
 				int64_t dot = (*e->target - *c1).dot(normal);
-				btAssert(dot <= 0);
+				CHULL_ASSERT(dot <= 0);
 				if ((dot == 0) && ((*e->target - *c1).dot(t) > 0)) {
 					if (!start1 || (get_orientation(start1, e, s, Point32(0, 0, -1)) == COUNTER_CLOCKWISE)) {
 						start1 = e;
@@ -1771,7 +1778,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 					do {
 						if (a && b) {
 							int64_t vol = (v->point - ref).dot((a->point - ref).cross(b->point - ref));
-							btAssert(vol >= 0);
+							CHULL_ASSERT(vol >= 0);
 							Point32 c = v->point + a->point + b->point + ref;
 							hullCenterX += vol * c.x;
 							hullCenterY += vol * c.y;
@@ -1779,7 +1786,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 							volume += vol;
 						}
 
-						btAssert(f->copy != stamp);
+						CHULL_ASSERT(f->copy != stamp);
 						f->copy = stamp;
 						f->face = face;
 
@@ -1861,7 +1868,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 	int64_t origDot = p_face->origin.dot(normal);
 	Point32 shiftedOrigin = p_face->origin + shift;
 	int64_t shiftedDot = shiftedOrigin.dot(normal);
-	btAssert(shiftedDot <= origDot);
+	CHULL_ASSERT(shiftedDot <= origDot);
 	if (shiftedDot >= origDot) {
 		return false;
 	}
@@ -1886,7 +1893,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 			n++;
 #endif
 			Rational128 dot = e->target->dot(normal);
-			btAssert(dot.compare(origDot) <= 0);
+			CHULL_ASSERT(dot.compare(origDot) <= 0);
 #ifdef DEBUG_CONVEX_HULL
 			printf("Moving downwards, edge is ");
 			e->print();
@@ -1916,7 +1923,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 			n++;
 #endif
 			Rational128 dot = e->target->dot(normal);
-			btAssert(dot.compare(origDot) <= 0);
+			CHULL_ASSERT(dot.compare(origDot) <= 0);
 #ifdef DEBUG_CONVEX_HULL
 			printf("Moving upwards, edge is ");
 			e->print();
@@ -2033,7 +2040,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 			n++;
 #endif
 			e = e->reverse->prev;
-			btAssert(e != intersection->reverse);
+			CHULL_ASSERT(e != intersection->reverse);
 			cmp = e->target->dot(normal).compare(shiftedDot);
 #ifdef DEBUG_CONVEX_HULL
 			printf("Testing edge ");
@@ -2072,7 +2079,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 			int64_t r0 = (intersection->face->origin - shiftedOrigin).dot(n0);
 			int64_t r1 = (intersection->reverse->face->origin - shiftedOrigin).dot(n1);
 			Int128 det = Int128::mul(m00, m11) - Int128::mul(m01, m10);
-			btAssert(det.get_sign() != 0);
+			CHULL_ASSERT(det.get_sign() != 0);
 			Vertex *v = vertex_pool.new_object();
 			v->point.index = -1;
 			v->copy = -1;
@@ -2151,7 +2158,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 		p_stack.push_back(nullptr);
 	}
 
-	btAssert(p_stack.size() > 0);
+	CHULL_ASSERT(p_stack.size() > 0);
 	vertex_list = p_stack[0];
 
 #ifdef DEBUG_CONVEX_HULL
