@@ -32,7 +32,6 @@
 #define PAGED_ALLOCATOR_H
 
 #include <type_traits>
-#include <assert.h>
 
 #include "core/os/memory.h"
 #include "core/os/spin_lock.h"
