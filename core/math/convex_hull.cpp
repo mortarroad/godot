@@ -48,6 +48,7 @@ subject to the following restrictions:
 #include "convex_hull.h"
 
 #include "core/error_macros.h"
+#include "core/paged_allocator.h"
 #include "core/math/math_defs.h"
 #include "core/os/memory.h"
 
@@ -469,14 +470,6 @@ public:
 		Face *face = nullptr;
 		int32_t copy = -1;
 
-		~Edge() {
-			next = nullptr;
-			prev = nullptr;
-			reverse = nullptr;
-			target = nullptr;
-			face = nullptr;
-		}
-
 		void link(Edge *n) {
 			CHULL_ASSERT(reverse->target == n->reverse->target);
 			next = n;
@@ -595,92 +588,11 @@ private:
 		CLOCKWISE,
 		COUNTER_CLOCKWISE };
 
-	template <typename T>
-	class PoolArray {
-	private:
-		T *array;
-		int32_t size;
-
-	public:
-		PoolArray<T> *next;
-
-		PoolArray(int32_t p_size) {
-			size = p_size;
-			next = nullptr;
-			array = (T *)memalloc(sizeof(T) * p_size);
-		}
-
-		~PoolArray() {
-			memfree(array);
-		}
-
-		T *init() {
-			T *o = array;
-			for (int32_t i = 0; i < size; i++, o++) {
-				o->next = (i + 1 < size) ? o + 1 : nullptr;
-			}
-			return array;
-		}
-	};
-
-	template <typename T>
-	class Pool {
-	private:
-		PoolArray<T> *arrays = nullptr;
-		PoolArray<T> *next_array = nullptr;
-		T *free_objects = nullptr;
-		int32_t array_size = 256;
-
-	public:
-		Pool() {
-		}
-
-		~Pool() {
-			while (arrays) {
-				PoolArray<T> *p = arrays;
-				arrays = p->next;
-				memdelete(p);
-			}
-		}
-
-		void reset() {
-			next_array = arrays;
-			free_objects = nullptr;
-		}
-
-		void set_array_size(int32_t p_array_size) {
-			this->array_size = p_array_size;
-		}
-
-		T *new_object() {
-			T *o = free_objects;
-			if (!o) {
-				PoolArray<T> *p = next_array;
-				if (p) {
-					next_array = p->next;
-				} else {
-					p = memnew(PoolArray<T>(array_size));
-					p->next = arrays;
-					arrays = p;
-				}
-				o = p->init();
-			}
-			free_objects = o->next;
-			return memnew_placement(o, T);
-		};
-
-		void free_object(T *p_object) {
-			p_object->~T();
-			p_object->next = free_objects;
-			free_objects = p_object;
-		}
-	};
-
 	Vector3 scaling;
 	Vector3 center;
-	Pool<Vertex> vertex_pool;
-	Pool<Edge> edge_pool;
-	Pool<Face> face_pool;
+	PagedAllocator<Vertex, false, true> vertex_pool;
+	PagedAllocator<Edge, false, true> edge_pool;
+	PagedAllocator<Face, false, true> face_pool;
 	LocalVector<Vertex *> original_vertices;
 	int32_t merge_stamp = 0;
 	int32_t min_axis = 0;
@@ -719,8 +631,8 @@ private:
 			p_edge->target->edges = nullptr;
 		}
 
-		edge_pool.free_object(p_edge);
-		edge_pool.free_object(r);
+		edge_pool.free(p_edge);
+		edge_pool.free(r);
 		used_edge_pairs--;
 	}
 
@@ -884,8 +796,8 @@ int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
 
 ConvexHullInternal::Edge *ConvexHullInternal::new_edge_pair(Vertex *p_from, Vertex *p_to) {
 	CHULL_ASSERT(p_from && p_to);
-	Edge *e = edge_pool.new_object();
-	Edge *r = edge_pool.new_object();
+	Edge *e = edge_pool.alloc();
+	Edge *r = edge_pool.alloc();
 	e->reverse = r;
 	r->reverse = e;
 	e->copy = merge_stamp;
@@ -1064,7 +976,7 @@ void ConvexHullInternal::compute_internal(int32_t p_start, int32_t p_end, Interm
 			return;
 		case 2: {
 			Vertex *v = original_vertices[p_start];
-			Vertex *w = v + 1;
+			Vertex *w = original_vertices[p_start + 1];
 			if (v->point != w->point) {
 				int32_t dx = v->point.x - w->point.x;
 				int32_t dy = v->point.y - w->point.y;
@@ -1700,10 +1612,9 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 	points.sort_custom<PointComparator>();
 
 	vertex_pool.reset();
-	vertex_pool.set_array_size(p_count);
 	original_vertices.resize(p_count);
 	for (int32_t i = 0; i < p_count; i++) {
-		Vertex *v = vertex_pool.new_object();
+		Vertex *v = vertex_pool.alloc();
 		v->edges = nullptr;
 		v->point = points[i];
 		v->copy = -1;
@@ -1713,7 +1624,6 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 	points.clear();
 
 	edge_pool.reset();
-	edge_pool.set_array_size(6 * p_count);
 
 	used_edge_pairs = 0;
 	max_used_edge_pairs = 0;
@@ -1775,7 +1685,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 					stack.push_back(e->target);
 				}
 				if (e->copy != stamp) {
-					Face *face = face_pool.new_object();
+					Face *face = face_pool.alloc();
 					face->init(e->target, e->reverse->prev->target, v);
 					faces.push_back(face);
 					Edge *f = e;
@@ -2087,7 +1997,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 			int64_t r1 = (intersection->reverse->face->origin - shifted_origin).dot(n1);
 			Int128 det = Int128::mul(m00, m11) - Int128::mul(m01, m10);
 			CHULL_ASSERT(det.get_sign() != 0);
-			Vertex *v = vertex_pool.new_object();
+			Vertex *v = vertex_pool.alloc();
 			v->point.index = -1;
 			v->copy = -1;
 			v->point128 = PointR128(Int128::mul(p_face->dir0.x * r0, m11) - Int128::mul(p_face->dir0.x * r1, m01) + Int128::mul(p_face->dir1.x * r1, m00) - Int128::mul(p_face->dir1.x * r0, m10) + det * shifted_origin.x,
