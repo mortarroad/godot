@@ -1280,7 +1280,7 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 	printf("   Advancing %d %d  (%p %p, %d %d)\n", p_c0->point.index, p_c1->point.index, start0, start1, start0 ? start0->target->point.index : -1, start1 ? start1->target->point.index : -1);
 #endif
 
-	int64_t maxDot0 = et0.dot(perp);
+	int64_t max_dot0 = et0.dot(perp);
 	if (p_e0) {
 		while (p_e0->target != p_stop0) {
 			Edge *e = p_e0->reverse->prev;
@@ -1292,16 +1292,16 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 				break;
 			}
 			int64_t dot = e->target->point.dot(perp);
-			if (dot <= maxDot0) {
+			if (dot <= max_dot0) {
 				break;
 			}
-			maxDot0 = dot;
+			max_dot0 = dot;
 			p_e0 = e;
 			et0 = e->target->point;
 		}
 	}
 
-	int64_t maxDot1 = et1.dot(perp);
+	int64_t max_dot1 = et1.dot(perp);
 	if (p_e1) {
 		while (p_e1->target != p_stop1) {
 			Edge *e = p_e1->reverse->next;
@@ -1313,10 +1313,10 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 				break;
 			}
 			int64_t dot = e->target->point.dot(perp);
-			if (dot <= maxDot1) {
+			if (dot <= max_dot1) {
 				break;
 			}
-			maxDot1 = dot;
+			max_dot1 = dot;
 			p_e1 = e;
 			et1 = e->target->point;
 		}
@@ -1326,7 +1326,7 @@ void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1
 	printf("   Starting at %d %d\n", et0.index, et1.index);
 #endif
 
-	int64_t dx = maxDot1 - maxDot0;
+	int64_t dx = max_dot1 - max_dot0;
 	if (dx > 0) {
 		while (true) {
 			int64_t dy = (et1 - et0).dot(s);
