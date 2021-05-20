@@ -590,9 +590,9 @@ private:
 
 	Vector3 scaling;
 	Vector3 center;
-	PagedAllocator<Vertex, false, true> vertex_pool;
-	PagedAllocator<Edge, false, true> edge_pool;
-	PagedAllocator<Face, false, true> face_pool;
+	PagedAllocator<Vertex> vertex_pool;
+	PagedAllocator<Edge> edge_pool;
+	PagedAllocator<Face> face_pool;
 	LocalVector<Vertex *> original_vertices;
 	int32_t merge_stamp = 0;
 	int32_t min_axis = 0;
@@ -649,6 +649,12 @@ private:
 	bool shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> p_stack);
 
 public:
+	~ConvexHullInternal() {
+		vertex_pool.reset(true);
+		edge_pool.reset(true);
+		face_pool.reset(true);
+	}
+
 	Vertex *vertex_list;
 
 	void compute(const Vector3 *p_coords, int32_t p_count);
@@ -1611,7 +1617,7 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 
 	points.sort_custom<PointComparator>();
 
-	vertex_pool.reset();
+	vertex_pool.reset(true);
 	original_vertices.resize(p_count);
 	for (int32_t i = 0; i < p_count; i++) {
 		Vertex *v = vertex_pool.alloc();
@@ -1623,7 +1629,7 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 
 	points.clear();
 
-	edge_pool.reset();
+	edge_pool.reset(true);
 
 	used_edge_pairs = 0;
 	max_used_edge_pairs = 0;

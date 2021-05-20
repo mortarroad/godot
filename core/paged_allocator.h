@@ -37,7 +37,7 @@
 #include "core/os/spin_lock.h"
 #include "core/typedefs.h"
 
-template <class T, bool thread_safe = false, bool allow_leak = false>
+template <class T, bool thread_safe = false>
 class PagedAllocator {
 	T **page_pool = nullptr;
 	T ***available_pool = nullptr;
@@ -91,8 +91,8 @@ public:
 		allocs_available++;
 	}
 
-	void reset() {
-		if (!std::is_trivially_destructible<T>::value) {
+	void reset(bool allow_unfreed = false) {
+		if (!allow_unfreed || !std::is_trivially_destructible<T>::value) {
 			ERR_FAIL_COND(allocs_available < pages_allocated * page_size);
 		}
 		if (pages_allocated) {
@@ -125,9 +125,7 @@ public:
 	}
 
 	~PagedAllocator() {
-		if (!allow_leak) {
-			ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, "Pages in use exist at exit in PagedAllocator");
-		}
+		ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, "Pages in use exist at exit in PagedAllocator");
 		reset();
 	}
 };
